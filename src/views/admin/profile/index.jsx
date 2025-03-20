@@ -1,42 +1,93 @@
-/*!
-  _   _  ___  ____  ___ ________  _   _   _   _ ___   
- | | | |/ _ \|  _ \|_ _|__  / _ \| \ | | | | | |_ _| 
- | |_| | | | | |_) || |  / / | | |  \| | | | | || | 
- |  _  | |_| |  _ < | | / /| |_| | |\  | | |_| || |
- |_| |_|\___/|_| \_\___/____\___/|_| \_|  \___/|___|
-                                                                                                                                                                                                                                                                                                                                       
-=========================================================
-* Horizon UI - v1.1.0
-=========================================================
-
-* Product Page: https://www.horizon-ui.com/
-* Copyright 2023 Horizon UI (https://www.horizon-ui.com/)
-
-* Designed and Coded by Simmmple
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// Chakra imports
-import { Box, Grid } from "@chakra-ui/react";
-
-// Custom components
+import React, { useState, useEffect } from "react";
+import { Box, Grid, Spinner, useToast, Flex } from "@chakra-ui/react"; // Added Flex import
 import Banner from "views/admin/profile/components/Banner";
 import General from "views/admin/profile/components/General";
 import Notifications from "views/admin/profile/components/Notifications";
 import Projects from "views/admin/profile/components/Projects";
 import Storage from "views/admin/profile/components/Storage";
 import Upload from "views/admin/profile/components/Upload";
+import LineChart from "views/admin/profile/components/LineChart";
+import { fetchDeviceData } from "../../../api/api"; // Import fetchDeviceData API
 
-// Assets
 import banner from "assets/img/auth/banner.png";
 import avatar from "assets/img/avatars/avatar4.png";
-import React from "react";
 
 export default function Overview() {
+  const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  // Fetch device data based on IMEI number
+  const fetchDeviceDataByImei = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchDeviceData("your-imei-number-here"); // Replace with actual IMEI number
+      setDevices(data);
+      toast({
+        title: "Device Data Fetched.",
+        description: "Device data has been successfully fetched.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error.",
+        description: `Failed to fetch device data: ${error.message}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeviceDataByImei();
+  }, []);
+
+  // Prepare data for the line chart
+  const chartData = {
+    labels: devices.map(device => new Date(device.ts).toLocaleDateString()),
+    datasets: [
+      {
+        label: 'Battery Voltage',
+        data: devices.map(device => device.batteryVoltage),
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        fill: true,
+      },
+      {
+        label: 'Signal Strength',
+        data: devices.map(device => device.signalStrength),
+        borderColor: 'rgba(153, 102, 255, 1)',
+        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        fill: true,
+      },
+      {
+        label: 'RSSI',
+        data: devices.map(device => device.rssi),
+        borderColor: 'rgba(255, 159, 64, 1)',
+        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+        fill: true,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Device Data Over Time',
+      },
+    },
+  };
+
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
       {/* Main Fields */}
@@ -113,6 +164,13 @@ export default function Overview() {
           }}
         />
       </Grid>
+      {loading ? (
+        <Flex justify="center" align="center" h="200px">
+          <Spinner size="lg" />
+        </Flex>
+      ) : (
+        <LineChart data={chartData} options={chartOptions} />
+      )}
     </Box>
   );
 }

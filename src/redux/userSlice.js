@@ -15,9 +15,7 @@ const userSlice = createSlice({
       state.name = action.payload.name;
       state.email = action.payload.email;
       state.isLoggedIn = true;
-      if (action.payload.imei) {
-        state.imei = action.payload.imei; // Conditionally store IMEI
-      }
+      state.imei = action.payload.imei || null; // Conditionally store IMEI or set to null
     },
     clearUser(state) {
       state.name = '';

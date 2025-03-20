@@ -39,7 +39,8 @@ function SignIn() {
     e.preventDefault();
     try {
       const userData = await login(email, password);
-      dispatch(setUser({ name: userData.name, email: userData.email, imei: userData.imei }));
+      console.log("User data from API:", userData); // Debugging log
+      dispatch(setUser({ name: userData.user.name, email: userData.user.email, imei: userData.user.imei }));
       toast({
         title: 'Login successful.',
         description: 'You have successfully logged in.',
@@ -49,14 +50,13 @@ function SignIn() {
       });
       navigate('/admin/default'); // Navigate to Main Dashboard
     } catch (err) {
-      setError(`Failed to login as ${err.message}`);
+      setError(`Failed to login: ${err.message}`);
     }
   };
 
   // Chakra color mode
   const textColor = useColorModeValue('navy.700', 'white');
   const textColorSecondary = 'gray.400';
-  const textColorDetails = useColorModeValue('navy.700', 'secondaryGray.600');
   const textColorBrand = useColorModeValue('brand.500', 'white');
   const brandStars = useColorModeValue('brand.500', 'brand.400');
 
@@ -103,7 +103,6 @@ function SignIn() {
                 isRequired
                 variant="auth"
                 fontSize="sm"
-                ms={{ base: '0px', md: '0px' }}
                 type="email"
                 placeholder="mail@simmmple.com"
                 mb="24px"
@@ -136,19 +135,6 @@ function SignIn() {
                   />
                 </InputRightElement>
               </InputGroup>
-              <Flex justifyContent="space-between" align="center" mb="24px">
-                <FormControl display="flex" alignItems="center">
-                  <Checkbox id="remember-login" colorScheme="brandScheme" me="10px" />
-                  <FormLabel htmlFor="remember-login" mb="0" fontWeight="normal" color={textColor} fontSize="sm">
-                    Keep me logged in
-                  </FormLabel>
-                </FormControl>
-                <NavLink to="/auth/forgot-password">
-                  <Text color={textColorBrand} fontSize="sm" w="124px" fontWeight="500">
-                    Forgot password?
-                  </Text>
-                </NavLink>
-              </Flex>
               {error && (
                 <Text color="red.500" mb="24px">
                   {error}

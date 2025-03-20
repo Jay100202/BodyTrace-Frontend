@@ -12,9 +12,9 @@ import {
 // Admin Imports
 import MainDashboard from 'views/admin/default';
 import AddUser from 'views/admin/addUser/components/AddUser';
+import ListUserImei from 'views/admin/addUser/components/ListUserImei'; // Import ListUserImei component
 
 import Profile from 'views/admin/profile';
-
 
 // Auth Imports
 import SignInCentered from 'views/auth/signIn';
@@ -27,7 +27,6 @@ const routes = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: <MainDashboard />,
   },
- 
   {
     name: 'Profile',
     layout: '/admin',
@@ -41,10 +40,14 @@ const routes = [
     path: '/add-user',
     icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
     component: <AddUser />,
-
   },
-
-  
+  {
+    name: 'List User IMEI',
+    layout: '/admin',
+    path: '/list-user-imei',
+    icon: <Icon as={MdOutlineShoppingCart} width="20px" height="20px" color="inherit" />, // Choose an appropriate icon
+    component: <ListUserImei />,
+  },
   {
     name: 'Sign In',
     layout: '/auth',
@@ -52,7 +55,6 @@ const routes = [
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: <SignInCentered />,
   },
-  
 ];
 
 export default routes;
