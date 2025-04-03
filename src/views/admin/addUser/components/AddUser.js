@@ -24,11 +24,17 @@ import { SearchIcon } from "@chakra-ui/icons";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import Card from "components/card/Card.js";
-import { createUser, fetchUsers } from "../../../../api/api"; // Import fetchUsers API
+import { createUser, fetchUsers, getUserById, editUser } from "../../../../api/api"; // Import new API functions
 
 // UserForm Component
-const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgColor, textColor, borderColor }) => {
+const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isEditing, bgColor, textColor, borderColor }) => {
   const [showPassword, setShowPassword] = useState(false);
+
+  // Move all useColorModeValue calls to the top level
+  const inputBg = useColorModeValue("white", "gray.700");
+  const hoverBg = useColorModeValue("gray.100", "gray.600");
+  const buttonBg = useColorModeValue("gray.100", "gray.600");
+  const buttonHoverBg = useColorModeValue("gray.200", "gray.700");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -46,7 +52,7 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
         h="100%"
       >
         <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" mb={6} color={textColor}>
-          Add User
+          {isEditing ? "Edit User" : "Add User"}
         </Text>
 
         <form onSubmit={handleSubmit}>
@@ -60,7 +66,7 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              bg={useColorModeValue("white", "gray.700")}
+              bg={inputBg}
               border="1px"
               borderColor={borderColor}
               borderRadius="md"
@@ -78,7 +84,7 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              bg={useColorModeValue("white", "gray.700")}
+              bg={inputBg}
               border="1px"
               borderColor={borderColor}
               borderRadius="md"
@@ -86,38 +92,42 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
               mb="24px"
             />
 
-            <FormLabel htmlFor="password-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
-              Password
-            </FormLabel>
-            <InputGroup size="md" mb="24px">
-              <Input
-                id="password-input"
-                placeholder="e.g., ********"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handleInputChange}
-                bg={useColorModeValue("white", "gray.700")}
-                border="1px"
-                borderColor={borderColor}
-                borderRadius="md"
-                autoComplete="new-password"
-              />
-              <InputRightElement>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={togglePasswordVisibility}
-                  _hover={{ bg: "transparent" }}
-                >
-                  {showPassword ? (
-                    <RiEyeCloseLine color={textColor} />
-                  ) : (
-                    <MdOutlineRemoveRedEye color={textColor} />
-                  )}
-                </Button>
-              </InputRightElement>
-            </InputGroup>
+            {!isEditing && (
+              <>
+                <FormLabel htmlFor="password-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
+                  Password
+                </FormLabel>
+                <InputGroup size="md" mb="24px">
+                  <Input
+                    id="password-input"
+                    placeholder="e.g., ********"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    bg={inputBg}
+                    border="1px"
+                    borderColor={borderColor}
+                    borderRadius="md"
+                    autoComplete="new-password"
+                  />
+                  <InputRightElement>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={togglePasswordVisibility}
+                      _hover={{ bg: "transparent" }}
+                    >
+                      {showPassword ? (
+                        <RiEyeCloseLine color={textColor} />
+                      ) : (
+                        <MdOutlineRemoveRedEye color={textColor} />
+                      )}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+              </>
+            )}
 
             <FormLabel htmlFor="imei-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
               IMEI Number
@@ -128,7 +138,7 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
               name="imei"
               value={formData.imei}
               onChange={handleInputChange}
-              bg={useColorModeValue("white", "gray.700")}
+              bg={inputBg}
               border="1px"
               borderColor={borderColor}
               borderRadius="md"
@@ -142,7 +152,7 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
                 onClick={handleCancel}
                 color={textColor}
                 borderColor={borderColor}
-                _hover={{ bg: useColorModeValue("gray.100", "gray.600") }}
+                _hover={{ bg: hoverBg }}
               >
                 Cancel
               </Button>
@@ -150,10 +160,10 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, bgC
                 type="submit"
                 variant="solid"
                 color={textColor}
-                bg={useColorModeValue("gray.100", "gray.600")}
-                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                bg={buttonBg}
+                _hover={{ bg: buttonHoverBg }}
               >
-                Submit
+                {isEditing ? "Update" : "Submit"}
               </Button>
             </Flex>
           </FormControl>
@@ -171,13 +181,14 @@ const UserList = ({
   totalPages,
   currentPage,
   setShowUserForm,
+  handleEditUser,
   bgColor,
   textColor,
   borderColor,
   secondaryBgColor,
   handleSearch,
   searchQuery,
-  itemsPerPage, // Add itemsPerPage as a prop
+  itemsPerPage,
 }) => (
   <Box pt={20}>
     <Card
@@ -245,7 +256,12 @@ const UserList = ({
                     {user.imei}
                   </Td>
                   <Td py={4}>
-                    <Button variant="link" color="purple.600" fontWeight="bold">
+                    <Button
+                      variant="link"
+                      color="purple.600"
+                      fontWeight="bold"
+                      onClick={() => handleEditUser(user._id)} 
+                    >
                       Edit user
                     </Button>
                   </Td>
@@ -296,21 +312,21 @@ const AddUser = () => {
     password: "",
     imei: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
   const toast = useToast();
 
   const itemsPerPage = 9;
 
-  // Color modes
   const bgColor = useColorModeValue("white", "#7551ff");
   const textColor = useColorModeValue("gray.800", "white");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const secondaryBgColor = useColorModeValue("gray.50", "gray.700");
 
-  // Fetch users dynamically from the server
   const fetchUserData = async (page = 1, search = "") => {
     setLoading(true);
     try {
-      const response = await fetchUsers(page, itemsPerPage, "name", "asc", search); // Call the API
+      const response = await fetchUsers(page, itemsPerPage, "name", "asc", search);
       setUsers(response.users);
       setTotalPages(response.totalPages);
       setCurrentPage(response.currentPage);
@@ -327,7 +343,6 @@ const AddUser = () => {
     }
   };
 
-  // Handle form input changes
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -336,24 +351,42 @@ const AddUser = () => {
     }));
   }, []);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { name, email, password, imei } = formData;
 
     try {
-      // Call the createUser API
-      await createUser(name, email, password, imei);
+      if (isEditing) {
+        // Update existing user
+        const userData = {
+          name: formData.name,
+          email: formData.email,
+          imei: formData.imei,
+        };
 
-      toast({
-        title: "User created.",
-        description: "The user has been successfully created.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+        await editUser(editingUserId, userData);
 
-      // Reset the form and hide the form view
+        toast({
+          title: "User updated.",
+          description: "The user has been successfully updated.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        // Create new user
+        const { name, email, password, imei } = formData;
+        await createUser(name, email, password, imei);
+
+        toast({
+          title: "User created.",
+          description: "The user has been successfully created.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
+      // Reset form and state
       setFormData({
         name: "",
         email: "",
@@ -361,13 +394,15 @@ const AddUser = () => {
         imei: "",
       });
       setShowUserForm(false);
+      setIsEditing(false);
+      setEditingUserId(null);
 
       // Refresh the user list
       fetchUserData(currentPage, searchQuery);
     } catch (error) {
       toast({
         title: "Error.",
-        description: `Failed to create user: ${error.message}`,
+        description: `Failed to ${isEditing ? "update" : "create"} user: ${error.message}`,
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -375,9 +410,10 @@ const AddUser = () => {
     }
   };
 
-  // Cancel form
   const handleCancel = () => {
     setShowUserForm(false);
+    setIsEditing(false);
+    setEditingUserId(null);
     setFormData({
       name: "",
       email: "",
@@ -386,18 +422,54 @@ const AddUser = () => {
     });
   };
 
-  // Handle search
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-    fetchUserData(1, e.target.value); // Fetch users based on search query
+  const handleEditUser = async (userId) => {
+    if (!userId) {
+      toast({
+        title: "Error.",
+        description: "User ID is undefined.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userData = await getUserById(userId);
+
+      setFormData({
+        name: userData.name,
+        email: userData.email,
+        password: "", // Password is not returned for security reasons
+        imei: userData.imei,
+      });
+
+      setIsEditing(true);
+      setEditingUserId(userId);
+      setShowUserForm(true);
+    } catch (error) {
+      toast({
+        title: "Error.",
+        description: `Failed to fetch user details: ${error.message}`,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Change page
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    fetchUserData(1, e.target.value);
+  };
+
   const paginate = (pageNumber) => {
     fetchUserData(pageNumber, searchQuery);
   };
 
-  // Fetch users on component mount
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -410,6 +482,7 @@ const AddUser = () => {
           handleInputChange={handleInputChange}
           handleSubmit={handleSubmit}
           handleCancel={handleCancel}
+          isEditing={isEditing}
           bgColor={bgColor}
           textColor={textColor}
           borderColor={borderColor}
@@ -422,13 +495,14 @@ const AddUser = () => {
           totalPages={totalPages}
           currentPage={currentPage}
           setShowUserForm={setShowUserForm}
+          handleEditUser={handleEditUser}
           bgColor={bgColor}
           textColor={textColor}
           borderColor={borderColor}
           secondaryBgColor={secondaryBgColor}
           handleSearch={handleSearch}
           searchQuery={searchQuery}
-          itemsPerPage={itemsPerPage} // Pass itemsPerPage as a prop
+          itemsPerPage={itemsPerPage}
         />
       )}
     </Box>

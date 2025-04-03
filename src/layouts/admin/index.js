@@ -19,6 +19,7 @@ export default function Dashboard(props) {
   const getRoute = () => {
     return window.location.pathname !== '/admin/full-screen-maps';
   };
+  
   const getActiveRoute = (routes) => {
     let activeRoute = 'Default Brand Text';
     for (let i = 0; i < routes.length; i++) {
@@ -42,6 +43,7 @@ export default function Dashboard(props) {
     }
     return activeRoute;
   };
+  
   const getActiveNavbar = (routes) => {
     let activeNavbar = false;
     for (let i = 0; i < routes.length; i++) {
@@ -65,6 +67,7 @@ export default function Dashboard(props) {
     }
     return activeNavbar;
   };
+  
   const getActiveNavbarText = (routes) => {
     let activeNavbar = false;
     for (let i = 0; i < routes.length; i++) {
@@ -88,6 +91,8 @@ export default function Dashboard(props) {
     }
     return activeNavbar;
   };
+  
+  // Important: this function renders ALL routes, regardless of display property
   const getRoutes = (routes) => {
     return routes.map((route, key) => {
       if (route.layout === '/admin') {
@@ -102,9 +107,11 @@ export default function Dashboard(props) {
       }
     });
   };
+  
   document.documentElement.dir = 'ltr';
   const { onOpen } = useDisclosure();
   document.documentElement.dir = 'ltr';
+  
   return (
     <Box>
       <Box>
@@ -114,6 +121,7 @@ export default function Dashboard(props) {
             setToggleSidebar,
           }}
         >
+          {/* Pass all routes to Sidebar - filtering happens in Links.js */}
           <Sidebar routes={routes} display="none" {...rest} />
           <Box
             float="right"

@@ -1,172 +1,145 @@
-/*!
-  _   _  ___  ____  ___ ________  _   _   _   _ ___   
- | | | |/ _ \|  _ \|_ _|__  / _ \| \ | | | | | |_ _| 
- | |_| | | | | |_) || |  / / | | |  \| | | | | || | 
- |  _  | |_| |  _ < | | / /| |_| | |\  | | |_| || |
- |_| |_|\___/|_| \_\___/____\___/|_| \_|  \___/|___|
-                                                                                                                                                                                                                                                                                                                                       
-=========================================================
-* Horizon UI - v1.1.0
-=========================================================
-
-* Product Page: https://www.horizon-ui.com/
-* Copyright 2023 Horizon UI (https://www.horizon-ui.com/)
-
-* Designed and Coded by Simmmple
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// Chakra imports
-import {
-  Avatar,
-  Box,
-  Flex,
-  FormLabel,
-  Icon,
-  Select,
-  SimpleGrid,
-  useColorModeValue,
-} from "@chakra-ui/react";
-// Assets
-import Usa from "assets/img/dashboards/usa.png";
-// Custom components
-import MiniCalendar from "components/calendar/MiniCalendar";
-import MiniStatistics from "components/card/MiniStatistics";
-import IconBox from "components/icons/IconBox";
-import React from "react";
-import {
-  MdAddTask,
-  MdAttachMoney,
-  MdBarChart,
-  MdFileCopy,
-} from "react-icons/md";
-import CheckTable from "views/admin/default/components/CheckTable";
-import ComplexTable from "views/admin/default/components/ComplexTable";
-import DailyTraffic from "views/admin/default/components/DailyTraffic";
-import PieCard from "views/admin/default/components/PieCard";
-import Tasks from "views/admin/default/components/Tasks";
-import TotalSpent from "views/admin/default/components/TotalSpent";
-import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
-import {
-  columnsDataCheck,
-  columnsDataComplex,
-} from "views/admin/default/variables/columnsData";
-import tableDataCheck from "views/admin/default/variables/tableDataCheck.json";
-import tableDataComplex from "views/admin/default/variables/tableDataComplex.json";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Box, Text, Spinner, Flex, Select } from "@chakra-ui/react";
+import Card from "components/card/Card"; // Import the Card component
+import { fetchDeviceData } from "../../../api/api";
+import { Line } from "react-chartjs-2";
 
 export default function UserReports() {
-  // Chakra Color Mode
-  const brandColor = useColorModeValue("brand.500", "white");
-  const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
+  const imei = useSelector((state) => state.user.imei);
+  const [deviceData, setDeviceData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [unit, setUnit] = useState("Pounds"); // Default unit is Pounds
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchDeviceData(imei);
+        // Filter out entries that do not have the `values` or `weight` field
+        const filteredData = data.filter((item) => item.values && item.values.weight !== undefined);
+        setDeviceData(filteredData);
+      } catch (error) {
+        console.error("Error fetching device data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (imei) {
+      fetchData();
+    }
+  }, [imei]);
+
+  // Sort data by date
+  const sortedDeviceData = [...deviceData].sort(
+    (a, b) => new Date(a.dateTime) - new Date(b.dateTime)
+  );
+
+  // Convert weight based on the selected unit
+  const convertWeight = (weightInGrams) => {
+    if (unit === "Pounds") {
+      return (weightInGrams / 453.592).toFixed(2); // Convert grams to pounds
+    } else if (unit === "Kilograms") {
+      return (weightInGrams / 1000).toFixed(2); // Convert grams to kilograms
+    }
+    return weightInGrams; // Default is grams
+  };
+
+  // Prepare data for the graph
+  const chartData = {
+    labels: sortedDeviceData.map((item) => new Date(item.dateTime).toLocaleDateString()), // X-axis: Dates
+    datasets: [
+      {
+        label: `Weight (${unit})`,
+        data: sortedDeviceData.map((item) => convertWeight(item.values.weight)), // Y-axis: Converted weights
+        borderColor: "#4CAF50",
+        backgroundColor: "rgba(76, 175, 80, 0.2)",
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
+  if (!imei) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Text color="red.500" fontSize="lg" textAlign="center">
+          IMEI number is missing. Please select a device.
+        </Text>
+      </Box>
+    );
+  }
+
+  if (deviceData.length === 0 && !loading) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Text color="gray.500" fontSize="lg" textAlign="center">
+          No data available to display. Please check your device or try again later.
+        </Text>
+      </Box>
+    );
+  }
+
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      <SimpleGrid
-        columns={{ base: 1, md: 2, lg: 3, "2xl": 6 }}
-        gap='20px'
-        mb='20px'>
-        <MiniStatistics
-          startContent={
-            <IconBox
-              w='56px'
-              h='56px'
-              bg={boxBg}
-              icon={
-                <Icon w='32px' h='32px' as={MdBarChart} color={brandColor} />
-              }
-            />
-          }
-          name='Earnings'
-          value='$350.4'
-        />
-        <MiniStatistics
-          startContent={
-            <IconBox
-              w='56px'
-              h='56px'
-              bg={boxBg}
-              icon={
-                <Icon w='32px' h='32px' as={MdAttachMoney} color={brandColor} />
-              }
-            />
-          }
-          name='Spend this month'
-          value='$642.39'
-        />
-        <MiniStatistics growth='+23%' name='Sales' value='$574.34' />
-        <MiniStatistics
-          endContent={
-            <Flex me='-16px' mt='10px'>
-              <FormLabel htmlFor='balance'>
-                <Avatar src={Usa} />
-              </FormLabel>
+      <Card mt="40px" p="20px" borderRadius="lg" boxShadow="md">
+        {loading ? (
+          <Flex justify="center" align="center" h="200px">
+            <Spinner size="lg" />
+          </Flex>
+        ) : (
+          <>
+            <Flex justify="flex-end" mb="20px">
               <Select
-                id='balance'
-                variant='mini'
-                mt='5px'
-                me='0px'
-                defaultValue='usd'>
-                <option value='usd'>USD</option>
-                <option value='eur'>EUR</option>
-                <option value='gba'>GBA</option>
+                width="150px"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                size="sm"
+              >
+                <option value="Pounds">Pounds</option>
+                <option value="Kilograms">Kilograms</option>
               </Select>
             </Flex>
-          }
-          name='Your balance'
-          value='$1,000'
-        />
-        <MiniStatistics
-          startContent={
-            <IconBox
-              w='56px'
-              h='56px'
-              bg='linear-gradient(90deg, #4481EB 0%, #04BEFE 100%)'
-              icon={<Icon w='28px' h='28px' as={MdAddTask} color='white' />}
+            <Line
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                  title: {
+                    display: true,
+                    text: `Weight Over Time (${unit})`,
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        return `Weight: ${context.raw} ${unit}`;
+                      },
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    title: {
+                      display: true,
+                      text: "Date",
+                    },
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: `Weight (${unit})`,
+                    },
+                  },
+                },
+              }}
             />
-          }
-          name='New Tasks'
-          value='154'
-        />
-        <MiniStatistics
-          startContent={
-            <IconBox
-              w='56px'
-              h='56px'
-              bg={boxBg}
-              icon={
-                <Icon w='32px' h='32px' as={MdFileCopy} color={brandColor} />
-              }
-            />
-          }
-          name='Total Projects'
-          value='2935'
-        />
-      </SimpleGrid>
-
-      <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px' mb='20px'>
-        <TotalSpent />
-        <WeeklyRevenue />
-      </SimpleGrid>
-      <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
-        <CheckTable columnsData={columnsDataCheck} tableData={tableDataCheck} />
-        <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px'>
-          <DailyTraffic />
-          <PieCard />
-        </SimpleGrid>
-      </SimpleGrid>
-      <SimpleGrid columns={{ base: 1, md: 1, xl: 2 }} gap='20px' mb='20px'>
-        <ComplexTable
-          columnsData={columnsDataComplex}
-          tableData={tableDataComplex}
-        />
-        <SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px'>
-          <Tasks />
-          <MiniCalendar h='100%' minW='100%' selectRange={false} />
-        </SimpleGrid>
-      </SimpleGrid>
+          </>
+        )}
+      </Card>
     </Box>
   );
 }

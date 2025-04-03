@@ -4,7 +4,6 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
-  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -40,7 +39,14 @@ function SignIn() {
     try {
       const userData = await login(email, password);
       console.log("User data from API:", userData); // Debugging log
-      dispatch(setUser({ name: userData.user.name, email: userData.user.email, imei: userData.user.imei }));
+      dispatch(
+        setUser({
+          name: userData.user.name,
+          email: userData.user.email,
+          imei: userData.user.imei,
+          type: userData.user.type, // Store type in Redux
+        })
+      );
       toast({
         title: 'Login successful.',
         description: 'You have successfully logged in.',
@@ -48,7 +54,13 @@ function SignIn() {
         duration: 5000,
         isClosable: true,
       });
-      navigate('/admin/default'); // Navigate to Main Dashboard
+
+      // Redirect based on user type
+      if (userData.user.type === "admin") {
+        navigate('/admin/add-user'); // Redirect admin to Add User page
+      } else {
+        navigate('/admin/default'); // Redirect regular user to Main Dashboard
+      }
     } catch (err) {
       setError(`Failed to login: ${err.message}`);
     }
@@ -61,7 +73,21 @@ function SignIn() {
   const brandStars = useColorModeValue('brand.500', 'brand.400');
 
   return (
-    <DefaultAuth illustrationBackground={illustration} image={illustration}>
+    <DefaultAuth
+      illustrationBackground={illustration}
+      image={
+        <img
+          src={illustration}
+          alt="Illustration"
+          style={{
+            width: '20px', // Set the width to make the image small
+            height: 'auto', // Maintain aspect ratio
+            display: 'block', // Ensure it behaves as a block element
+            margin: '0 auto', // Center the image horizontally
+          }}
+        />
+      }
+    >
       <Flex
         maxW={{ base: '100%', md: 'max-content' }}
         w="100%"
@@ -140,6 +166,13 @@ function SignIn() {
                   {error}
                 </Text>
               )}
+              <Flex justifyContent="space-between" alignItems="center" mb="24px">
+                <NavLink to="/auth/forgot-password">
+                  <Text color={textColorBrand} fontSize="sm" fontWeight="500" _hover={{ textDecoration: 'underline' }}>
+                    Forgot Password?
+                  </Text>
+                </NavLink>
+              </Flex>
               <Button fontSize="sm" variant="brand" fontWeight="500" w="100%" h="50" mb="24px" type="submit">
                 Sign In
               </Button>
