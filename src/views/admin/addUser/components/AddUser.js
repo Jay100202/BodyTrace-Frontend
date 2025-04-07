@@ -27,8 +27,18 @@ import Card from "components/card/Card.js";
 import { createUser, fetchUsers, getUserById, editUser } from "../../../../api/api"; // Import new API functions
 
 // UserForm Component
-const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isEditing, bgColor, textColor, borderColor }) => {
+const UserForm = ({
+  formData,
+  handleInputChange,
+  handleSubmit,
+  handleCancel,
+  isEditing,
+  bgColor,
+  textColor,
+  borderColor,
+}) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [imeiNumbers, setImeiNumbers] = useState(formData.imei || [""]); // Initialize with an array
 
   // Move all useColorModeValue calls to the top level
   const inputBg = useColorModeValue("white", "gray.700");
@@ -38,6 +48,29 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isE
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  // Handle changes to IMEI input fields
+  const handleImeiChange = (index, value) => {
+    const updatedImeis = [...imeiNumbers];
+    updatedImeis[index] = value;
+    setImeiNumbers(updatedImeis);
+  };
+
+  // Add a new IMEI input field
+  const addImeiField = () => {
+    setImeiNumbers([...imeiNumbers, ""]);
+  };
+
+  // Remove an IMEI input field
+  const removeImeiField = (index) => {
+    const updatedImeis = imeiNumbers.filter((_, i) => i !== index);
+    setImeiNumbers(updatedImeis);
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    handleSubmit({ ...formData, imei: imeiNumbers }); // Pass IMEI array to the parent
   };
 
   return (
@@ -51,13 +84,24 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isE
         minH="500px"
         h="100%"
       >
-        <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" mb={6} color={textColor}>
+        <Text
+          fontSize={{ base: "xl", md: "2xl" }}
+          fontWeight="bold"
+          mb={6}
+          color={textColor}
+        >
           {isEditing ? "Edit User" : "Add User"}
         </Text>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleFormSubmit}>
           <FormControl>
-            <FormLabel htmlFor="name-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
+            <FormLabel
+              htmlFor="name-input"
+              fontSize="sm"
+              fontWeight="500"
+              color={textColor}
+              mb="8px"
+            >
               Name
             </FormLabel>
             <Input
@@ -74,7 +118,13 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isE
               mb="24px"
             />
 
-            <FormLabel htmlFor="email-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
+            <FormLabel
+              htmlFor="email-input"
+              fontSize="sm"
+              fontWeight="500"
+              color={textColor}
+              mb="8px"
+            >
               Email
             </FormLabel>
             <Input
@@ -94,7 +144,13 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isE
 
             {!isEditing && (
               <>
-                <FormLabel htmlFor="password-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
+                <FormLabel
+                  htmlFor="password-input"
+                  fontSize="sm"
+                  fontWeight="500"
+                  color={textColor}
+                  mb="8px"
+                >
                   Password
                 </FormLabel>
                 <InputGroup size="md" mb="24px">
@@ -129,22 +185,46 @@ const UserForm = ({ formData, handleInputChange, handleSubmit, handleCancel, isE
               </>
             )}
 
-            <FormLabel htmlFor="imei-input" fontSize="sm" fontWeight="500" color={textColor} mb="8px">
-              IMEI Number
+            <FormLabel
+              htmlFor="imei-input"
+              fontSize="sm"
+              fontWeight="500"
+              color={textColor}
+              mb="8px"
+            >
+              IMEI Numbers
             </FormLabel>
-            <Input
-              id="imei-input"
-              placeholder="e.g., 123456789012345"
-              name="imei"
-              value={formData.imei}
-              onChange={handleInputChange}
-              bg={inputBg}
-              border="1px"
-              borderColor={borderColor}
-              borderRadius="md"
-              autoComplete="off"
-              mb="24px"
-            />
+            {imeiNumbers.map((imei, index) => (
+              <Flex key={index} align="center" mb="16px">
+                <Input
+                  id={`imei-input-${index}`}
+                  placeholder={`IMEI Number ${index + 1}`}
+                  value={imei}
+                  onChange={(e) => handleImeiChange(index, e.target.value)}
+                  bg={inputBg}
+                  border="1px"
+                  borderColor={borderColor}
+                  borderRadius="md"
+                  autoComplete="off"
+                  mr={2}
+                />
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  onClick={() => removeImeiField(index)}
+                >
+                  Remove
+                </Button>
+              </Flex>
+            ))}
+            <Button
+              size="sm"
+              colorScheme="blue"
+              onClick={addImeiField}
+              mt={2}
+            >
+              + Add IMEI
+            </Button>
 
             <Flex justifyContent="flex-end" mt={6} gap={3}>
               <Button
@@ -252,15 +332,15 @@ const UserList = ({
                   <Td py={4} color="gray.600">
                     {user.email}
                   </Td>
-                  <Td py={4} color="gray.600">
-                    {user.imei}
+                                    <Td py={4} color="gray.600">
+                    {Array.isArray(user.imei) ? user.imei.join(", ") : user.imei || "N/A"}
                   </Td>
                   <Td py={4}>
                     <Button
                       variant="link"
                       color="purple.600"
                       fontWeight="bold"
-                      onClick={() => handleEditUser(user._id)} 
+                      onClick={() => handleEditUser(user._id)}
                     >
                       Edit user
                     </Button>
@@ -310,7 +390,7 @@ const AddUser = () => {
     name: "",
     email: "",
     password: "",
-    imei: "",
+    imei: [],
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
@@ -351,16 +431,14 @@ const AddUser = () => {
     }));
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (data) => {
     try {
       if (isEditing) {
         // Update existing user
         const userData = {
-          name: formData.name,
-          email: formData.email,
-          imei: formData.imei,
+          name: data.name,
+          email: data.email,
+          imei: data.imei,
         };
 
         await editUser(editingUserId, userData);
@@ -374,7 +452,7 @@ const AddUser = () => {
         });
       } else {
         // Create new user
-        const { name, email, password, imei } = formData;
+        const { name, email, password, imei } = data;
         await createUser(name, email, password, imei);
 
         toast({
@@ -391,7 +469,7 @@ const AddUser = () => {
         name: "",
         email: "",
         password: "",
-        imei: "",
+        imei: [],
       });
       setShowUserForm(false);
       setIsEditing(false);
@@ -418,7 +496,7 @@ const AddUser = () => {
       name: "",
       email: "",
       password: "",
-      imei: "",
+      imei: [],
     });
   };
 
@@ -442,7 +520,7 @@ const AddUser = () => {
         name: userData.name,
         email: userData.email,
         password: "", // Password is not returned for security reasons
-        imei: userData.imei,
+        imei: userData.imei || [],
       });
 
       setIsEditing(true);

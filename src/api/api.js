@@ -14,13 +14,13 @@ export const login = async (email, password, loginType) => {
   return response.json();
 };
 
-export const createUser = async (name, email, password, imei) => {
+export const createUser = async (name, email, password, imeis) => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name, email, password, imei }),
+    body: JSON.stringify({ name, email, password, imei: imeis }), // Pass IMEIs as an array
   });
 
   if (!response.ok) {
@@ -47,13 +47,14 @@ export const fetchUsers = async (page = 1, limit = 10, sortBy = 'name', order = 
   return response.json();
 };
 
-// Fetch device data based on IMEI number
-export const fetchDeviceData = async (imei) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/${imei}`, {
-    method: 'GET',
+// Fetch device data based on multiple IMEI numbers
+export const fetchDeviceData = async (imeis, limit = 50, from = 1) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/data`, {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ imeis, limit, from }), // Pass IMEIs as an array
   });
 
   if (!response.ok) {
@@ -63,18 +64,15 @@ export const fetchDeviceData = async (imei) => {
   return response.json();
 };
 
-// Fetch filtered device data based on IMEI, start date, and end date
-export const fetchFilteredDeviceData = async (imei, startDate, endDate) => {
-  const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/user/device/${imei}/filtered-data`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ startDate, endDate }),
-    }
-  );
+// Fetch filtered device data based on multiple IMEI numbers, start date, and end date
+export const fetchFilteredDeviceData = async (imeis, startDate, endDate, page = 1, limit = 10) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/filtered-data`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ imeis, startDate, endDate, page, limit }), // Pass IMEIs as an array
+  });
 
   if (!response.ok) {
     throw new Error('Failed to fetch filtered device data');
@@ -118,16 +116,14 @@ export const resetPassword = async (resetToken, newPassword, confirmPassword) =>
 };
 
 // Fetch and download filtered device data as a CSV file
-export const downloadFilteredDeviceDataCSV = async (imei) => {
-  const response = await fetch(
-    `${process.env.REACT_APP_API_URL}/api/user/device/${imei}/downloadCSV`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+export const downloadFilteredDeviceDataCSV = async (imeis, startDate, endDate) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/downloadCSV`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ imeis, startDate, endDate }), // Pass IMEIs as an array
+  });
 
   if (!response.ok) {
     throw new Error('Failed to download filtered device data as CSV');
@@ -140,12 +136,11 @@ export const downloadFilteredDeviceDataCSV = async (imei) => {
   // Create a temporary link element to trigger the download
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', `filtered_device_data_${imei}.csv`);
+  link.setAttribute('download', `filtered_device_data.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
-
 
 // Edit user data
 export const editUser = async (userId, userData) => {
@@ -179,7 +174,6 @@ export const getUserById = async (userId) => {
 
   return response.json();
 };
-
 
 // Change Password
 export const changePassword = async (email, oldPassword, newPassword, confirmPassword) => {
