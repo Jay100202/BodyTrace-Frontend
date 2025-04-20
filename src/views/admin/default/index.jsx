@@ -6,9 +6,9 @@ import { fetchDeviceData } from "../../../api/api";
 import { Line } from "react-chartjs-2";
 
 export default function UserReports() {
-  const imeis = useSelector((state) => state.user.imei); // Array of IMEIs
-  console.log("IMEIs from Redux:", imeis); // Debugging log
-  const [deviceData, setDeviceData] = useState({});
+  const imei = useSelector((state) => state.user.imei); // Single IMEI
+  console.log("IMEI from Redux:", imei); // Debugging log
+  const [deviceData, setDeviceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unit, setUnit] = useState("Pounds"); // Default unit is Pounds
 
@@ -16,20 +16,14 @@ export default function UserReports() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await fetchDeviceData(imeis); // Fetch data for all IMEIs
+        const data = await fetchDeviceData(imei); // Fetch data for the single IMEI
 
         console.log("Fetched device data:", data); // Debugging log
-        // Group data by IMEI and filter out entries without `weight`
-        const groupedData = data.reduce((acc, item) => {
-          const imei = item.imei;
-          if (!acc[imei]) acc[imei] = [];
-          // Only include entries with `values` and `weight`
-          if (item.values && item.values.weight !== undefined) {
-            acc[imei].push(item);
-          }
-          return acc;
-        }, {});
-        setDeviceData(groupedData);
+        // Filter out entries without `values`
+        const filteredData = data.filter((item) => item.values);
+        // Sort the data by date in descending order (most recent first)
+        filteredData.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        setDeviceData(filteredData);
       } catch (error) {
         console.error("Error fetching device data:", error);
       } finally {
@@ -37,10 +31,10 @@ export default function UserReports() {
       }
     };
 
-    if (imeis && imeis.length > 0) {
+    if (imei) {
       fetchData();
     }
-  }, [imeis]);
+  }, [imei]);
 
   // Convert weight based on the selected unit
   const convertWeight = (weightInGrams) => {
@@ -52,11 +46,11 @@ export default function UserReports() {
     return weightInGrams; // Default is grams
   };
 
-  if (!imeis || imeis.length === 0) {
+  if (!imei) {
     return (
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
         <Text color="red.500" fontSize="lg" textAlign="center">
-          IMEI numbers are missing. Please select a device.
+          IMEI is missing. Please select a device.
         </Text>
       </Box>
     );
@@ -72,6 +66,55 @@ export default function UserReports() {
     );
   }
 
+  // Dynamically generate datasets based on available data
+  const datasets = [];
+  const labels = deviceData.map((item) =>
+    new Date(item.dateTime).toLocaleDateString()
+  );
+
+  // Check for weight data
+  const weightData = deviceData.filter((item) => item.values?.weight !== undefined);
+  if (weightData.length > 0) {
+    datasets.push({
+      label: `Weight (${unit}) for IMEI: ${imei}`,
+      data: weightData.map((item) => convertWeight(item.values.weight)),
+      borderColor: "#4CAF50",
+      backgroundColor: "rgba(76, 175, 80, 0.2)",
+      tension: 0.4,
+      fill: true,
+    });
+  }
+
+  // Check for blood pressure data
+  const bloodPressureData = deviceData.filter(
+    (item) => item.values?.systolic !== undefined && item.values?.diastolic !== undefined
+  );
+  if (bloodPressureData.length > 0) {
+    datasets.push(
+      {
+        label: `Systolic Pressure for IMEI: ${imei}`,
+        data: bloodPressureData.map((item) => item.values.systolic / 100), // Convert to a readable format
+        borderColor: "#FF5733",
+        backgroundColor: "rgba(255, 87, 51, 0.2)",
+        tension: 0.4,
+        fill: true,
+      },
+      {
+        label: `Diastolic Pressure for IMEI: ${imei}`,
+        data: bloodPressureData.map((item) => item.values.diastolic / 100), // Convert to a readable format
+        borderColor: "#33C3FF",
+        backgroundColor: "rgba(51, 195, 255, 0.2)",
+        tension: 0.4,
+        fill: true,
+      }
+    );
+  }
+
+  const chartData = {
+    labels,
+    datasets,
+  };
+
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
       <Flex justify="flex-end" mb="20px">
@@ -85,81 +128,32 @@ export default function UserReports() {
           <option value="Kilograms">Kilograms</option>
         </Select>
       </Flex>
-      {Object.keys(deviceData).map((imei) => {
-        // Sort data by date in descending order (most recent first)
-        const sortedDeviceData = [...(deviceData[imei] || [])].sort(
-          (a, b) => new Date(b.dateTime) - new Date(a.dateTime)
-        );
-
-        const chartData = {
-          labels: sortedDeviceData.map((item) =>
-            new Date(item.dateTime).toLocaleDateString()
-          ), // X-axis: Dates
-          datasets: [
-            {
-              label: `Weight (${unit}) for IMEI: ${imei}`,
-              data: sortedDeviceData.map((item) =>
-                convertWeight(item.values.weight)
-              ), // Y-axis: Converted weights
-              borderColor: "#4CAF50",
-              backgroundColor: "rgba(76, 175, 80, 0.2)",
-              tension: 0.4,
-              fill: true,
-            },
-          ],
-        };
-
-        return (
-          <Card key={imei} mt="40px" p="20px" borderRadius="lg" boxShadow="md">
-            {sortedDeviceData.length === 0 ? (
-              <Text color="gray.500" fontSize="lg" textAlign="center">
-                No data available for IMEI: {imei}
-              </Text>
-            ) : (
-              <Box w="100%" overflowX="auto">
-                <Line
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false, // Makes the graph responsive
-                    plugins: {
-                      legend: {
-                        position: "top",
-                      },
-                      title: {
-                        display: true,
-                        text: `Weight Over Time (${unit}) for IMEI: ${imei}`,
-                      },
-                      tooltip: {
-                        callbacks: {
-                          label: function (context) {
-                            return `Weight: ${context.raw} ${unit}`;
-                          },
-                        },
-                      },
-                    },
-                    scales: {
-                      x: {
-                        title: {
-                          display: true,
-                          text: "Date",
-                        },
-                      },
-                      y: {
-                        title: {
-                          display: true,
-                          text: `Weight (${unit})`,
-                        },
-                      },
-                    },
-                  }}
-                  height={300} // Adjust height for better responsiveness
-                />
-              </Box>
-            )}
-          </Card>
-        );
-      })}
+      <Card mt="40px" p="20px" borderRadius="lg" boxShadow="md">
+        {deviceData.length === 0 ? (
+          <Text color="gray.500" fontSize="lg" textAlign="center">
+            No data available for IMEI: {imei}
+          </Text>
+        ) : (
+          <Box w="100%" overflowX="auto">
+            <Line
+              data={chartData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: "top" },
+                  title: { display: true, text: `Data Over Time for IMEI: ${imei}` },
+                },
+                scales: {
+                  x: { title: { display: true, text: "Date" } },
+                  y: { title: { display: true, text: "Values" } },
+                },
+              }}
+              height={300}
+            />
+          </Box>
+        )}
+      </Card>
     </Box>
   );
 }

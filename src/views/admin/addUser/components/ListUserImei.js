@@ -17,13 +17,12 @@ import {
   Circle,
   Input,
   Button,
-  Select, // Import Select for dropdown
+  Select,
 } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import Card from "components/card/Card.js";
-import { fetchFilteredDeviceData, downloadFilteredDeviceDataCSV } from "../../../../api/api"; // Import the download API
+import { fetchFilteredDeviceData, downloadFilteredDeviceDataCSV } from "../../../../api/api";
 
-// UserList Component with Simplified Pagination
 const UserList = ({
   devices,
   loading,
@@ -34,15 +33,19 @@ const UserList = ({
   totalPages,
   totalCount,
   handlePageChange,
-  weightUnit, // Pass weight unit as a prop
+  weightUnit,
 }) => {
-  // Function to convert weight based on the selected unit
   const convertWeight = (weight) => {
     if (weightUnit === "lbs") {
       return (weight / 453.592).toFixed(2); // Convert grams to pounds
     }
     return (weight / 1000).toFixed(2); // Convert grams to kilograms
   };
+
+  // Check if data contains weight or blood pressure information
+  const hasWeightData = devices.some(device => device.values?.weight !== undefined);
+  const hasSystolicData = devices.some(device => device.values?.systolic !== undefined);
+  const hasDiastolicData = devices.some(device => device.values?.diastolic !== undefined);
 
   return (
     <Box pt={6}>
@@ -67,20 +70,36 @@ const UserList = ({
                   <Th pl={0} color="gray.500" fontWeight="medium">
                     IMEI NUMBER
                   </Th>
-                  <Th color="gray.500" fontWeight="medium">
-                    <Flex align="center" gap="5px"> {/* Reduced gap */}
-                      <Text>WEIGHT</Text>
-                      <Select
-                        size="sm"
-                        w="100px"
-                        value={weightUnit}
-                        onChange={(e) => handlePageChange(1, e.target.value)} // Reset to page 1 on unit change
-                      >
-                        <option value="lbs">Pounds (lbs)</option>
-                        <option value="kg">Kilograms (kg)</option>
-                      </Select>
-                    </Flex>
-                  </Th>
+                  
+                  {hasWeightData && (
+                    <Th color="gray.500" fontWeight="medium">
+                      <Flex align="center" gap="5px">
+                        <Text>WEIGHT</Text>
+                        <Select
+                          size="sm"
+                          w="100px"
+                          value={weightUnit}
+                          onChange={(e) => handlePageChange(1, e.target.value)}
+                        >
+                          <option value="lbs">Pounds (lbs)</option>
+                          <option value="kg">Kilograms (kg)</option>
+                        </Select>
+                      </Flex>
+                    </Th>
+                  )}
+                  
+                  {hasSystolicData && (
+                    <Th color="gray.500" fontWeight="medium">
+                      SYSTOLIC (mmHg)
+                    </Th>
+                  )}
+                  
+                  {hasDiastolicData && (
+                    <Th color="gray.500" fontWeight="medium">
+                      DIASTOLIC (mmHg)
+                    </Th>
+                  )}
+                  
                   <Th color="gray.500" fontWeight="medium">
                     DATE/TIME
                   </Th>
@@ -92,11 +111,31 @@ const UserList = ({
                     <Td pl={0} py={4} fontWeight="bold" color={textColor}>
                       {device.imei || "N/A"}
                     </Td>
-                    <Td py={4} color="gray.600">
-                      {device.values?.weight
-                        ? convertWeight(device.values.weight)
-                        : "N/A"}
-                    </Td>
+                    
+                    {hasWeightData && (
+                      <Td py={4} color="gray.600">
+                        {device.values?.weight
+                          ? convertWeight(device.values.weight)
+                          : "N/A"}
+                      </Td>
+                    )}
+                    
+                    {hasSystolicData && (
+                      <Td py={4} color="gray.600">
+                        {device.values?.systolic
+                          ? (device.values.systolic / 100).toFixed(0)
+                          : "N/A"}
+                      </Td>
+                    )}
+                    
+                    {hasDiastolicData && (
+                      <Td py={4} color="gray.600">
+                        {device.values?.diastolic
+                          ? (device.values.diastolic / 100).toFixed(0)
+                          : "N/A"}
+                      </Td>
+                    )}
+                    
                     <Td py={4} color="gray.600">
                       {new Date(device.ts).toLocaleString() || "N/A"}
                     </Td>
@@ -105,7 +144,6 @@ const UserList = ({
               </Tbody>
             </Table>
 
-            {/* Simplified Pagination Component */}
             <Flex
               justify="space-between"
               align="center"
@@ -161,7 +199,6 @@ const UserList = ({
   );
 };
 
-// ListUserImei Component
 const ListUserImei = () => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -170,7 +207,7 @@ const ListUserImei = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [weightUnit, setWeightUnit] = useState("lbs"); // Default weight unit
+  const [weightUnit, setWeightUnit] = useState("lbs");
   const toast = useToast();
 
   const imei = useSelector((state) => state.user.imei);
@@ -246,72 +283,66 @@ const ListUserImei = () => {
 
   const handlePageChange = (pageNumber, unit = weightUnit) => {
     setCurrentPage(pageNumber);
-    setWeightUnit(unit); // Update weight unit if changed
+    setWeightUnit(unit);
   };
 
   return (
     <Box p={8} pt={12} maxW="1200px" mx="auto">
-      {/* Date Range Selection Card */}
-                                <Card
-                    mt="40px" // Add margin-top to bring the card down
-                    mb="20px"
-                    pt={{ base: "40px", md: "60px" }} // Add responsive padding-top
-                    pb={{ base: "20px", md: "40px" }} // Add responsive padding-bottom
-                    px={{ base: "20px", md: "40px" }} // Add responsive padding-left and padding-right
-                  >
-                    <Flex
-                      direction="column" // Stack items vertically by default
-                      gap="20px"
-                    >
-                      {/* Start Date and End Date Inputs */}
-                      <Flex
-                        direction={{ base: "column", md: "row" }} // Stack inputs vertically on small screens
-                        gap="20px"
-                        align="center"
-                        justify="space-between"
-                      >
-                        <Box w="100%"> {/* Ensure inputs take full width on small screens */}
-                          <Text fontSize="sm" mb="2" color="gray.600">
-                            Start Date
-                          </Text>
-                          <Input
-                            type="date"
-                            placeholder="Start Date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            w="100%" // Make input take full width
-                          />
-                        </Box>
-                        <Box w="100%"> {/* Ensure inputs take full width on small screens */}
-                          <Text fontSize="sm" mb="2" color="gray.600">
-                            End Date
-                          </Text>
-                          <Input
-                            type="date"
-                            placeholder="End Date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            w="100%" // Make input take full width
-                          />
-                        </Box>
-                      </Flex>
-                  
-                      {/* Buttons */}
-                      <Flex
-                        direction={{ base: "column", md: "row" }} // Stack buttons vertically on small screens
-                        gap="10px"
-                        mt={{ base: "20px", md: "0" }}
-                        align="center"
-                      >
-                        <Button w={{ base: "100%", md: "auto" }} colorScheme="blue" onClick={handleSearch}>
-                          Search
-                        </Button>
-                        <Button w={{ base: "100%", md: "auto" }} colorScheme="green" onClick={handleDownloadCSV}>
-                          Generate CSV
-                        </Button>
-                      </Flex>
-                    </Flex>
-                  </Card>
+      <Card
+        mt="40px"
+        mb="20px"
+        pt={{ base: "40px", md: "60px" }}
+        pb={{ base: "20px", md: "40px" }}
+        px={{ base: "20px", md: "40px" }}
+      >
+        <Flex direction="column" gap="20px">
+          <Flex
+            direction={{ base: "column", md: "row" }}
+            gap="20px"
+            align="center"
+            justify="space-between"
+          >
+            <Box w="100%">
+              <Text fontSize="sm" mb="2" color="gray.600">
+                Start Date
+              </Text>
+              <Input
+                type="date"
+                placeholder="Start Date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                w="100%"
+              />
+            </Box>
+            <Box w="100%">
+              <Text fontSize="sm" mb="2" color="gray.600">
+                End Date
+              </Text>
+              <Input
+                type="date"
+                placeholder="End Date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                w="100%"
+              />
+            </Box>
+          </Flex>
+
+          <Flex
+            direction={{ base: "column", md: "row" }}
+            gap="10px"
+            mt={{ base: "20px", md: "0" }}
+            align="center"
+          >
+            <Button w={{ base: "100%", md: "auto" }} colorScheme="blue" onClick={handleSearch}>
+              Search
+            </Button>
+            <Button w={{ base: "100%", md: "auto" }} colorScheme="green" onClick={handleDownloadCSV}>
+              Generate CSV
+            </Button>
+          </Flex>
+        </Flex>
+      </Card>
 
       <UserList
         devices={devices}
@@ -323,7 +354,7 @@ const ListUserImei = () => {
         totalPages={totalPages}
         totalCount={totalCount}
         handlePageChange={handlePageChange}
-        weightUnit={weightUnit} // Pass weight unit to UserList
+        weightUnit={weightUnit}
       />
     </Box>
   );

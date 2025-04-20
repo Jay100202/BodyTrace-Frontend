@@ -58,6 +58,8 @@ function SignIn() {
       // Redirect based on user type
       if (userData.user.type === "admin") {
         navigate('/admin/add-user'); // Redirect admin to Add User page
+      } else if (userData.user.type === "middleAdmin") {
+        navigate('/admin/middle-admin-imei'); // Redirect middle admin to Middle Admin page
       } else {
         navigate('/admin/default'); // Redirect regular user to Main Dashboard
       }

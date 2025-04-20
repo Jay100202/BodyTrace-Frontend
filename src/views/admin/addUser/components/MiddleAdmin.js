@@ -10,9 +10,9 @@ import {
 } from "@chakra-ui/react";
 import { FaFileExcel, FaDownload } from "react-icons/fa";
 import Card from "components/card/Card.js";
-import { createUsersFromExcel } from "../../../../api/api";
+import { createMiddleAdminsFromExcel } from "../../../../api/api"; // Import the middle admin API function
 
-const ExcelUploadDownload = () => {
+const MiddleAdmin = () => {
   const [isExcelProcessing, setIsExcelProcessing] = useState(false);
   const [processedExcelData, setProcessedExcelData] = useState(null);
   const fileInputRef = useRef(null);
@@ -24,12 +24,12 @@ const ExcelUploadDownload = () => {
 
   const handleExcelUpload = async (file) => {
     if (!file) return;
-    
+
     setIsExcelProcessing(true);
     try {
-      const responseBlob = await createUsersFromExcel(file);
+      const responseBlob = await createMiddleAdminsFromExcel(file); // Call the middle admin API
       setProcessedExcelData(responseBlob);
-      
+
       toast({
         title: "Excel processed successfully",
         description: "Your file has been processed. You can now download the results.",
@@ -52,22 +52,22 @@ const ExcelUploadDownload = () => {
 
   const handleDownloadExcel = () => {
     if (!processedExcelData) return;
-    
+
     // Create a download link for the blob
     const url = window.URL.createObjectURL(processedExcelData);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'processed_users.xlsx';
+    a.download = "processed_middle_admins.xlsx";
     document.body.appendChild(a);
     a.click();
-    
+
     // Cleanup
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-    
+
     // Reset state to allow uploading another file
     setProcessedExcelData(null);
-    
+
     toast({
       title: "Download started",
       description: "Your file is being downloaded.",
@@ -94,10 +94,10 @@ const ExcelUploadDownload = () => {
           mb={6}
           color={textColor}
         >
-          Bulk User Management
+          Bulk Middle Admin Management
         </Text>
 
-        <Flex 
+        <Flex
           direction="column"
           align="center"
           justify="center"
@@ -116,8 +116,8 @@ const ExcelUploadDownload = () => {
           ) : processedExcelData ? (
             <Flex direction="column" align="center" justify="center">
               <Text mb={4}>Your file has been processed and is ready for download</Text>
-              <Button 
-                colorScheme="green" 
+              <Button
+                colorScheme="green"
                 leftIcon={<FaDownload />}
                 onClick={handleDownloadExcel}
                 size="lg"
@@ -127,11 +127,11 @@ const ExcelUploadDownload = () => {
             </Flex>
           ) : (
             <Flex direction="column" align="center" justify="center">
-              <Text mb={4}>Upload an Excel file containing user information</Text>
+              <Text mb={4}>Upload an Excel file containing middle admin information</Text>
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
                 accept=".xlsx, .xls"
                 onChange={(e) => {
                   if (e.target.files.length > 0) {
@@ -139,8 +139,8 @@ const ExcelUploadDownload = () => {
                   }
                 }}
               />
-              <Button 
-                colorScheme="teal" 
+              <Button
+                colorScheme="teal"
                 leftIcon={<FaFileExcel />}
                 onClick={() => fileInputRef.current.click()}
                 size="lg"
@@ -153,7 +153,7 @@ const ExcelUploadDownload = () => {
 
         <Box mt={4}>
           <Text fontSize="sm" color="gray.500">
-            Note: The Excel file should contain columns for Name, Email, Password, and IMEI numbers. After processing, you will receive a file with results of the operation.
+            Note: The Excel file should contain columns for Name, Email, and other required fields. After processing, you will receive a file with the results of the operation.
           </Text>
         </Box>
       </Card>
@@ -161,4 +161,4 @@ const ExcelUploadDownload = () => {
   );
 };
 
-export default ExcelUploadDownload;
+export default MiddleAdmin;

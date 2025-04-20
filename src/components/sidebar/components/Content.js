@@ -1,18 +1,17 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-// Chakra imports
-import { 
-  Box, 
-  Flex, 
-  HStack, 
-  Text, 
-  useColorModeValue, 
-  Image, 
-  Heading, 
-  VStack 
+import {
+  Box,
+  Flex,
+  HStack,
+  Text,
+  useColorModeValue,
+  Image,
+  Heading,
+  VStack,
 } from "@chakra-ui/react";
-import { useSelector } from "react-redux"; // Import useSelector to access Redux state
-import logoWhite from "assets/img/layout/logoWhite.png"; // Replace with your actual logo path
+import { useSelector } from "react-redux";
+import logoWhite from "assets/img/layout/logoWhite.png";
 
 export function SidebarLinks(props) {
   // Chakra color mode
@@ -28,6 +27,8 @@ export function SidebarLinks(props) {
   // Get user type from Redux
   const userType = useSelector((state) => state.user.type);
 
+  console.log("User Type:", userType); // Debugging line to check user type
+
   // Filter routes based on user type and display property
   const filteredRoutes = routes.filter((route) => {
     // Exclude routes with display: false
@@ -35,58 +36,44 @@ export function SidebarLinks(props) {
       return false;
     }
 
-    // Admin: Show only "Add User"
+    // Admin: Show "Add User" and "Middle Admin"
     if (userType === "admin") {
-      return route.name === "Add User";
+      return route.name === "Add User" || route.name === "Middle Admin";
     }
 
-    // User: Show everything except "Add User"
+    // Middle Admin: Show "Middle Admin IMEI" and "Middle Admin Dashboard"
+    if (userType === "middleAdmin") {
+      return route.name === "Middle Admin IMEI" || route.name === "Middle Admin Dashboard";
+    }
+
+    // User: Show only "Main Dashboard" and "List User IMEI"
     if (userType === "user") {
-      return route.name !== "Add User";
+      return route.name === "Main Dashboard" || route.name === "List User IMEI";
     }
 
     return false; // Default: show nothing if userType is undefined
   });
 
   return (
-    <Flex 
-      direction="column" 
-      height="100%" 
-      pt="25px" 
-      px="16px" 
-      borderRadius="30px"
-    >
+    <Flex direction="column" height="100%" pt="25px" px="16px" borderRadius="30px">
       {/* Brand/Logo Section */}
-            <Flex 
-        alignItems="center" 
-        justifyContent="center" 
-        mb="20px"
-      >
-        <Image 
-          src={logoWhite} 
-          alt="Horizon Free Logo" 
-          width="100%" // Make the image take the full width of the parent container
-          maxWidth="110px" // Set a maximum width for the image
-          objectFit="contain" // Ensure the image scales properly
+      <Flex alignItems="center" justifyContent="center" mb="20px">
+        <Image
+          src={logoWhite}
+          alt="Horizon Free Logo"
+          width="100%"
+          maxWidth="110px"
+          objectFit="contain"
         />
-        {!logoWhite && ( // Only show the text if the logo is not present
-          <Heading 
-            ml="10px" 
-            size="md" 
-            color={activeColor}
-          >
+        {!logoWhite && (
+          <Heading ml="10px" size="md" color={activeColor}>
             Body Trace
           </Heading>
         )}
       </Flex>
 
       {/* Navigation Links */}
-      <VStack 
-        spacing="10px" 
-        align="stretch" 
-        width="full"
-        mb="auto"
-      >
+      <VStack spacing="10px" align="stretch" width="full" mb="auto">
         {filteredRoutes.map((route, index) => {
           if (route.category) {
             return (
@@ -114,20 +101,13 @@ export function SidebarLinks(props) {
                       ps="10px"
                       bg={activeRoute ? "gray.100" : "transparent"}
                       borderRadius="md"
-                      _hover={{ 
-                        bg: activeRoute ? "gray.100" : "gray.50" 
+                      _hover={{
+                        bg: activeRoute ? "gray.100" : "gray.50",
                       }}
                     >
-                      <Flex 
-                        w="100%" 
-                        alignItems="center" 
-                        justifyContent="space-between"
-                      >
+                      <Flex w="100%" alignItems="center" justifyContent="space-between">
                         <Flex alignItems="center">
-                          <Box
-                            color={activeRoute ? activeIcon : textColor}
-                            me="18px"
-                          >
+                          <Box color={activeRoute ? activeIcon : textColor} me="18px">
                             {route.icon}
                           </Box>
                           <Text

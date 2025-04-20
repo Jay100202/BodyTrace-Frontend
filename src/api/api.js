@@ -14,17 +14,66 @@ export const login = async (email, password, loginType) => {
   return response.json();
 };
 
-export const createUser = async (name, email, password, imeis) => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/create`, {
+export const createUsersFromExcel = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file); // Attach the Excel file
+
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/create-users-from-excel`, {
+    method: 'POST',
+    body: formData, // Send the file as FormData
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create users from Excel');
+  }
+
+  return response.blob(); // Return the response as a Blob for file download
+};
+
+export const createMiddleAdminsFromExcel = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file); // Attach the Excel file
+
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/middle-admin/create-middle-admins`, {
+    method: 'POST',
+    body: formData, // Send the file as FormData
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create middle admins from Excel');
+  }
+
+  return response.blob(); // Return the response as a Blob for file download
+};
+
+// Fetch users assigned to a middle admin
+export const getUsersByMiddleAdmin = async (middleAdminId, page = 1, limit = 10, sortBy = 'createdAt', order = 'desc') => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/middle-admin/${middleAdminId}/users?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch users by middle admin');
+  }
+
+  return response.json();
+};
+
+// Fetch device data for assigned IMEIs
+export const getDeviceData = async (imei, limit = 50, from = 1, timezone = null) => {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/middle-admin/getdevicedata`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name, email, password, imei: imeis }), // Pass IMEIs as an array
+    body: JSON.stringify({ imei, limit, from, timezone }), // Send IMEI directly in the body
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create user');
+    throw new Error('Failed to fetch device data');
   }
 
   return response.json();
@@ -48,13 +97,13 @@ export const fetchUsers = async (page = 1, limit = 10, sortBy = 'name', order = 
 };
 
 // Fetch device data based on multiple IMEI numbers
-export const fetchDeviceData = async (imeis, limit = 50, from = 1) => {
+export const fetchDeviceData = async (imei, limit = 50, from = 1) => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/data`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imeis, limit, from }), // Pass IMEIs as an array
+    body: JSON.stringify({ imei, limit, from }), // Pass IMEI as a single value
   });
 
   if (!response.ok) {
@@ -65,13 +114,13 @@ export const fetchDeviceData = async (imeis, limit = 50, from = 1) => {
 };
 
 // Fetch filtered device data based on multiple IMEI numbers, start date, and end date
-export const fetchFilteredDeviceData = async (imeis, startDate, endDate, page = 1, limit = 10) => {
+export const fetchFilteredDeviceData = async (imei, startDate, endDate, page = 1, limit = 10) => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/filtered-data`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imeis, startDate, endDate, page, limit }), // Pass IMEIs as an array
+    body: JSON.stringify({ imei, startDate, endDate, page, limit }), // Pass IMEI as a single value
   });
 
   if (!response.ok) {
@@ -116,13 +165,13 @@ export const resetPassword = async (resetToken, newPassword, confirmPassword) =>
 };
 
 // Fetch and download filtered device data as a CSV file
-export const downloadFilteredDeviceDataCSV = async (imeis, startDate, endDate) => {
+export const downloadFilteredDeviceDataCSV = async (imei, startDate, endDate) => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/downloadCSV`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imeis, startDate, endDate }), // Pass IMEIs as an array
+    body: JSON.stringify({ imei, startDate, endDate }), // Pass IMEI as a single value
   });
 
   if (!response.ok) {

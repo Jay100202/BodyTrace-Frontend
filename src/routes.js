@@ -17,6 +17,9 @@ import ForgetPassword from 'views/auth/signIn/ForgetPassword';
 import ResetPassword from 'views/auth/signIn/ResetPassword'; 
 import Profile from 'views/admin/profile';
 import ChangePassword from 'views/auth/signIn/ChangePassword';
+import MiddleAdmin from 'views/admin/addUser/components/MiddleAdmin';
+import MiddleAdminImei from 'views/admin/addUser/components/MiddleAdminImei';
+import MiddleAdminDashboard from 'views/admin/addUser/components/MiddleAdminDashboard'; // Import the new component
 
 // Auth Imports
 import SignInCentered from 'views/auth/signIn';
@@ -30,14 +33,6 @@ const routes = [
     component: <MainDashboard />,
     display: true, // Show in sidebar
   },
-  // {
-  //   name: 'Profile',
-  //   layout: '/admin',
-  //   path: '/profile',
-  //   icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
-  //   component: <Profile />,
-  //   display: true, // Show in sidebar
-  // },
   {
     name: 'Add User',
     layout: '/admin',
@@ -45,6 +40,30 @@ const routes = [
     icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
     component: <AddUser />,
     display: true, // Show in sidebar
+  },
+  {
+    name: 'Middle Admin',
+    layout: '/admin',
+    path: '/middle-admin',
+    icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
+    component: <MiddleAdmin />,
+    display: true, // Show in sidebar
+  },
+  {
+    name: 'Middle Admin IMEI',
+    layout: '/admin',
+    path: '/middle-admin-imei',
+    icon: <Icon as={MdOutlineShoppingCart} width="20px" height="20px" color="inherit" />,
+    component: <MiddleAdminImei />,
+    display: true, // Show in sidebar
+  },
+  {
+    name: 'Middle Admin Dashboard',
+    layout: '/admin',
+    path: '/middle-admin-dashboard',
+    icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
+    component: <MiddleAdminDashboard />,
+    display: true, // Hide from sidebar, but keep route accessible
   },
   {
     name: 'List User IMEI',
@@ -68,23 +87,23 @@ const routes = [
     path: '/sign-in',
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: <SignInCentered />,
-    display: false, // Changed to false to hide from sidebar
+    display: false, // Hide from sidebar
   },
   {
-    name: 'Forgot Password',  // Updated name for consistency
+    name: 'Forgot Password',
     layout: '/auth',
-    path: '/forgot-password', // Changed from /forget-password to /forgot-password
+    path: '/forgot-password',
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: <ForgetPassword />,
-    display: false, // Hide from sidebar, but keep route accessible
+    display: false, // Hide from sidebar
   },
   {
     name: 'Reset Password',
     layout: '/auth',
-    path: '/reset-password/:resetToken', // Dynamic route for reset token
+    path: '/reset-password/:resetToken',
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
-    component: <ResetPassword />, 
-    display: false, // Hide from sidebar, but keep route accessible
+    component: <ResetPassword />,
+    display: false, // Hide from sidebar
   },
 ];
 
