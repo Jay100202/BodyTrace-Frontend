@@ -31,9 +31,12 @@ const MiddleAdminImei = () => {
   const navigate = useNavigate();
 
   const middleAdminId = useSelector((state) => state.user.email);
-  const bgColor = useColorModeValue("white", "#7551ff");
+  
+  // Fixed dark mode colors to match the rest of the application
+  const bgColor = useColorModeValue("white", "navy.800");
   const textColor = useColorModeValue("gray.800", "white");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
+  const tableHeaderColor = useColorModeValue("gray.500", "gray.300");
 
   const fetchUsersByMiddleAdmin = async () => {
     setLoading(true);
@@ -106,10 +109,10 @@ const MiddleAdminImei = () => {
             <Table variant="simple" size={{ base: "sm", md: "md" }}>
               <Thead>
                 <Tr>
-                  <Th color="gray.500" fontWeight="medium">IMEI NUMBER</Th>
-                  <Th color="gray.500" fontWeight="medium">LAST LOGIN</Th>
-                  <Th color="gray.500" fontWeight="medium">EMAIL</Th>
-                  <Th color="gray.500" fontWeight="medium">LAST DATA</Th>
+                  <Th color={tableHeaderColor} fontWeight="medium">IMEI NUMBER</Th>
+                  <Th color={tableHeaderColor} fontWeight="medium">LAST LOGIN</Th>
+                  <Th color={tableHeaderColor} fontWeight="medium">EMAIL</Th>
+                  <Th color={tableHeaderColor} fontWeight="medium">LAST DATA</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -159,7 +162,7 @@ const MiddleAdminImei = () => {
               borderColor={borderColor}
               flexDirection={{ base: "column", md: "row" }}
             >
-              <Text fontSize="sm" color="gray.500" mb={{ base: 4, md: 0 }}>
+              <Text fontSize="sm" color={tableHeaderColor} mb={{ base: 4, md: 0 }}>
                 Showing page {currentPage} of {totalPages} ({totalCount} total entries)
               </Text>
               <Flex align="center">

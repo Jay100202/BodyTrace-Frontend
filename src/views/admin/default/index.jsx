@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Box, Text, Spinner, Flex, Select } from "@chakra-ui/react";
+import { Box, Text, Spinner, Flex, Select, useColorModeValue } from "@chakra-ui/react";
 import Card from "components/card/Card";
 import { fetchDeviceData } from "../../../api/api";
 import { Line } from "react-chartjs-2";
@@ -11,6 +11,15 @@ export default function UserReports() {
   const [deviceData, setDeviceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unit, setUnit] = useState("Pounds"); // Default unit is Pounds
+
+  // UI colors for dark mode consistency
+  const bgColor = useColorModeValue("white", "navy.800");
+  const textColor = useColorModeValue("gray.800", "white");
+  const noDataColor = useColorModeValue("gray.500", "gray.400");
+
+  // Chart colors
+  const chartTextColor = useColorModeValue("#1A202C", "#FFFFFF");
+  const chartGridColor = useColorModeValue("rgba(0,0,0,0.1)", "rgba(255,255,255,0.1)");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -123,14 +132,16 @@ export default function UserReports() {
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
           size="sm"
+          bg={bgColor}
+          color={textColor}
         >
           <option value="Pounds">Pounds</option>
           <option value="Kilograms">Kilograms</option>
         </Select>
       </Flex>
-      <Card mt="40px" p="20px" borderRadius="lg" boxShadow="md">
+      <Card mt="40px" p="20px" borderRadius="lg" boxShadow="md" bg={bgColor}>
         {deviceData.length === 0 ? (
-          <Text color="gray.500" fontSize="lg" textAlign="center">
+          <Text color={noDataColor} fontSize="lg" textAlign="center">
             No data available for IMEI: {imei}
           </Text>
         ) : (
@@ -141,12 +152,45 @@ export default function UserReports() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                  legend: { position: "top" },
-                  title: { display: true, text: `Data Over Time for IMEI: ${imei}` },
+                  legend: {
+                    position: "top",
+                    labels: {
+                      color: chartTextColor,
+                    }
+                  },
+                  title: {
+                    display: true,
+                    text: `Data Over Time for IMEI: ${imei}`,
+                    color: chartTextColor,
+                  },
                 },
                 scales: {
-                  x: { title: { display: true, text: "Date" } },
-                  y: { title: { display: true, text: "Values" } },
+                  x: {
+                    title: {
+                      display: true,
+                      text: "Date",
+                      color: chartTextColor,
+                    },
+                    ticks: {
+                      color: chartTextColor,
+                    },
+                    grid: {
+                      color: chartGridColor,
+                    }
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: "Values",
+                      color: chartTextColor,
+                    },
+                    ticks: {
+                      color: chartTextColor,
+                    },
+                    grid: {
+                      color: chartGridColor,
+                    }
+                  },
                 },
               }}
               height={300}

@@ -18,9 +18,11 @@ const ExcelUploadDownload = () => {
   const fileInputRef = useRef(null);
   const toast = useToast();
 
-  const bgColor = useColorModeValue("white", "#7551ff");
+  // Change the dark mode background color to navy.800 instead of #7551ff
+  const bgColor = useColorModeValue("white", "navy.800");
   const textColor = useColorModeValue("gray.800", "white");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
+  const noteTextColor = useColorModeValue("gray.500", "gray.400");
 
   const handleExcelUpload = async (file) => {
     if (!file) return;
@@ -111,11 +113,11 @@ const ExcelUploadDownload = () => {
           {isExcelProcessing ? (
             <Flex direction="column" align="center" justify="center">
               <Spinner size="xl" mb={4} />
-              <Text>Processing your Excel file...</Text>
+              <Text color={textColor}>Processing your Excel file...</Text>
             </Flex>
           ) : processedExcelData ? (
             <Flex direction="column" align="center" justify="center">
-              <Text mb={4}>Your file has been processed and is ready for download</Text>
+              <Text mb={4} color={textColor}>Your file has been processed and is ready for download</Text>
               <Button 
                 colorScheme="green" 
                 leftIcon={<FaDownload />}
@@ -127,7 +129,7 @@ const ExcelUploadDownload = () => {
             </Flex>
           ) : (
             <Flex direction="column" align="center" justify="center">
-              <Text mb={4}>Upload an Excel file containing user information</Text>
+              <Text mb={4} color={textColor}>Upload an Excel file containing user information</Text>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -152,7 +154,7 @@ const ExcelUploadDownload = () => {
         </Flex>
 
         <Box mt={4}>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color={noteTextColor}>
             Note: The Excel file should contain columns for Name, Email, Password, and IMEI numbers. After processing, you will receive a file with results of the operation.
           </Text>
         </Box>

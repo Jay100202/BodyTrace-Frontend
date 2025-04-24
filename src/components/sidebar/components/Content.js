@@ -17,10 +17,25 @@ export function SidebarLinks(props) {
   // Chakra color mode
   let location = useLocation();
   let activeColor = useColorModeValue("gray.700", "white");
-  let inactiveColor = useColorModeValue("secondaryGray.600", "secondaryGray.600");
+  // Fix the inactive color for dark mode - changing from secondaryGray.600 to a lighter color
+  let inactiveColor = useColorModeValue("secondaryGray.600", "gray.200");
   let activeIcon = useColorModeValue("brand.500", "white");
-  let textColor = useColorModeValue("secondaryGray.500", "white");
+  // Fix the text color for dark mode - changing from secondaryGray.500 to gray.200
+  let textColor = useColorModeValue("secondaryGray.500", "gray.200");
   let brandColor = useColorModeValue("brand.500", "brand.400");
+  
+  // Pre-compute color mode values for use in callbacks
+  let activeBgLight = "gray.100";
+  let activeBgDark = "whiteAlpha.200";
+  let hoverActiveBgLight = "gray.100";
+  let hoverInactiveBgLight = "gray.50";
+  let hoverActiveBgDark = "whiteAlpha.200";
+  let hoverInactiveBgDark = "whiteAlpha.100";
+  
+  // Computed values
+  let activeBg = useColorModeValue(activeBgLight, activeBgDark);
+  let hoverActiveBg = useColorModeValue(hoverActiveBgLight, hoverActiveBgDark);
+  let hoverInactiveBg = useColorModeValue(hoverInactiveBgLight, hoverInactiveBgDark);
 
   const { routes } = props;
 
@@ -99,10 +114,11 @@ export function SidebarLinks(props) {
                       spacing={activeRoute ? "22px" : "26px"}
                       py="5px"
                       ps="10px"
-                      bg={activeRoute ? "gray.100" : "transparent"}
+                      // Use pre-computed values
+                      bg={activeRoute ? activeBg : "transparent"}
                       borderRadius="md"
                       _hover={{
-                        bg: activeRoute ? "gray.100" : "gray.50",
+                        bg: activeRoute ? hoverActiveBg : hoverInactiveBg,
                       }}
                     >
                       <Flex w="100%" alignItems="center" justifyContent="space-between">

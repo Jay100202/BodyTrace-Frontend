@@ -45,10 +45,17 @@ const MiddleAdminDashboard = () => {
   const [endDate, setEndDate] = useState("");
   const [weightUnit, setWeightUnit] = useState("lbs");
 
-  // UI colors
-  const bgColor = useColorModeValue("white", "#7551ff");
+  // UI colors - Fixed for dark mode consistency
+  const bgColor = useColorModeValue("white", "navy.800");
   const textColor = useColorModeValue("gray.800", "white");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
+  const tableHeaderColor = useColorModeValue("gray.500", "gray.300");
+  const labelColor = useColorModeValue("gray.600", "gray.300");
+  const dataColor = useColorModeValue("gray.600", "gray.400");
+  
+  // Chart colors - Fixed for ESLint rules of hooks
+  const chartTextColor = useColorModeValue("#1A202C", "#FFFFFF");
+  const chartGridColor = useColorModeValue("rgba(0,0,0,0.1)", "rgba(255,255,255,0.1)");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -241,12 +248,20 @@ const MiddleAdminDashboard = () => {
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
           size="sm"
+          bg={bgColor}
+          color={textColor}
         >
           <option value="Pounds">Pounds</option>
           <option value="Kilograms">Kilograms</option>
         </Select>
       </Flex>
-      <Card p="20px" borderRadius="lg" boxShadow="md" mb="40px">
+      <Card 
+        p="20px" 
+        borderRadius="lg" 
+        boxShadow="md" 
+        mb="40px"
+        bg={bgColor}
+      >
         <Box w="100%" overflowX="auto">
           {loading ? (
             <Flex justify="center" align="center" h="300px">
@@ -259,12 +274,45 @@ const MiddleAdminDashboard = () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                  legend: { position: "top" },
-                  title: { display: true, text: `Data Over Time for IMEI: ${imei}` },
+                  legend: { 
+                    position: "top",
+                    labels: {
+                      color: chartTextColor,
+                    }
+                  },
+                  title: { 
+                    display: true, 
+                    text: `Data Over Time for IMEI: ${imei}`,
+                    color: chartTextColor,
+                  },
                 },
                 scales: {
-                  x: { title: { display: true, text: "Date" } },
-                  y: { title: { display: true, text: "Values" } },
+                  x: { 
+                    title: { 
+                      display: true, 
+                      text: "Date",
+                      color: chartTextColor,
+                    },
+                    ticks: {
+                      color: chartTextColor,
+                    },
+                    grid: {
+                      color: chartGridColor,
+                    }
+                  },
+                  y: { 
+                    title: { 
+                      display: true, 
+                      text: "Values",
+                      color: chartTextColor,
+                    },
+                    ticks: {
+                      color: chartTextColor,
+                    },
+                    grid: {
+                      color: chartGridColor,
+                    }
+                  },
                 },
               }}
               height={300}
@@ -280,6 +328,7 @@ const MiddleAdminDashboard = () => {
         pt={{ base: "40px", md: "60px" }}
         pb={{ base: "20px", md: "40px" }}
         px={{ base: "20px", md: "40px" }}
+        bg={bgColor}
       >
         <Flex direction="column" gap="20px">
           <Flex
@@ -289,7 +338,7 @@ const MiddleAdminDashboard = () => {
             justify="space-between"
           >
             <Box w="100%">
-              <Text fontSize="sm" mb="2" color="gray.600">
+              <Text fontSize="sm" mb="2" color={labelColor}>
                 Start Date
               </Text>
               <Input
@@ -298,10 +347,13 @@ const MiddleAdminDashboard = () => {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 w="100%"
+                bg={bgColor}
+                color={textColor}
+                borderColor={borderColor}
               />
             </Box>
             <Box w="100%">
-              <Text fontSize="sm" mb="2" color="gray.600">
+              <Text fontSize="sm" mb="2" color={labelColor}>
                 End Date
               </Text>
               <Input
@@ -310,6 +362,9 @@ const MiddleAdminDashboard = () => {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 w="100%"
+                bg={bgColor}
+                color={textColor}
+                borderColor={borderColor}
               />
             </Box>
           </Flex>
@@ -350,12 +405,12 @@ const MiddleAdminDashboard = () => {
               <Table variant="simple">
                 <Thead>
                   <Tr>
-                    <Th pl={0} color="gray.500" fontWeight="medium">
+                    <Th pl={0} color={tableHeaderColor} fontWeight="medium">
                       IMEI NUMBER
                     </Th>
                     
                     {hasWeightData && (
-                      <Th color="gray.500" fontWeight="medium">
+                      <Th color={tableHeaderColor} fontWeight="medium">
                         <Flex align="center" gap="5px">
                           <Text>WEIGHT</Text>
                           <Select
@@ -363,6 +418,8 @@ const MiddleAdminDashboard = () => {
                             w="100px"
                             value={weightUnit}
                             onChange={(e) => handlePageChange(1, e.target.value)}
+                            bg={bgColor}
+                            color={textColor}
                           >
                             <option value="lbs">Pounds (lbs)</option>
                             <option value="kg">Kilograms (kg)</option>
@@ -372,18 +429,18 @@ const MiddleAdminDashboard = () => {
                     )}
                     
                     {hasSystolicData && (
-                      <Th color="gray.500" fontWeight="medium">
+                      <Th color={tableHeaderColor} fontWeight="medium">
                         SYSTOLIC (mmHg)
                       </Th>
                     )}
                     
                     {hasDiastolicData && (
-                      <Th color="gray.500" fontWeight="medium">
+                      <Th color={tableHeaderColor} fontWeight="medium">
                         DIASTOLIC (mmHg)
                       </Th>
                     )}
                     
-                    <Th color="gray.500" fontWeight="medium">
+                    <Th color={tableHeaderColor} fontWeight="medium">
                       DATE/TIME
                     </Th>
                   </Tr>
@@ -396,7 +453,7 @@ const MiddleAdminDashboard = () => {
                       </Td>
                       
                       {hasWeightData && (
-                        <Td py={4} color="gray.600">
+                        <Td py={4} color={dataColor}>
                           {device.values?.weight
                             ? convertTableWeight(device.values.weight)
                             : "N/A"}
@@ -404,7 +461,7 @@ const MiddleAdminDashboard = () => {
                       )}
                       
                       {hasSystolicData && (
-                        <Td py={4} color="gray.600">
+                        <Td py={4} color={dataColor}>
                           {device.values?.systolic
                             ? (device.values.systolic / 100).toFixed(0)
                             : "N/A"}
@@ -412,14 +469,14 @@ const MiddleAdminDashboard = () => {
                       )}
                       
                       {hasDiastolicData && (
-                        <Td py={4} color="gray.600">
+                        <Td py={4} color={dataColor}>
                           {device.values?.diastolic
                             ? (device.values.diastolic / 100).toFixed(0)
                             : "N/A"}
                         </Td>
                       )}
                       
-                      <Td py={4} color="gray.600">
+                      <Td py={4} color={dataColor}>
                         {new Date(device.ts || device.dateTime).toLocaleString() || "N/A"}
                       </Td>
                     </Tr>
@@ -434,8 +491,9 @@ const MiddleAdminDashboard = () => {
                 pt={2}
                 borderTop="1px"
                 borderColor={borderColor}
+                flexDirection={{ base: "column", md: "row" }}
               >
-                <Text fontSize="sm" color="gray.500">
+                <Text fontSize="sm" color={tableHeaderColor} mb={{ base: 4, md: 0 }}>
                   Showing page {currentPage} of {totalPages} ({totalCount} total entries)
                 </Text>
 
@@ -449,6 +507,8 @@ const MiddleAdminDashboard = () => {
                     borderRadius="md"
                     aria-label="Previous page"
                     mr={2}
+                    borderColor={borderColor}
+                    color={textColor}
                   />
 
                   <Circle
@@ -472,6 +532,8 @@ const MiddleAdminDashboard = () => {
                     borderRadius="md"
                     aria-label="Next page"
                     ml={2}
+                    borderColor={borderColor}
+                    color={textColor}
                   />
                 </Flex>
               </Flex>

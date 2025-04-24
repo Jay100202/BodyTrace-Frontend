@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Avatar,
+  Button,
   Flex,
   Icon,
   Menu,
@@ -8,14 +9,16 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useColorMode,
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
-import { useDispatch, useSelector } from "react-redux"; // Import useSelector
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { clearUser } from "../../redux/userSlice";
 import { persistor } from "../../redux/store";
 import { MdNotificationsNone } from "react-icons/md";
+import { IoMdMoon, IoMdSunny } from "react-icons/io";
 import { SearchBar } from "components/navbar/searchBar/SearchBar";
 import { SidebarResponsive } from "components/sidebar/Sidebar";
 import routes from "routes";
@@ -25,10 +28,11 @@ export default function HeaderLinks(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const toast = useToast();
+  const { colorMode, toggleColorMode } = useColorMode();
 
   // Fetch username and userType from Redux
-  const userName = useSelector((state) => state.user.name); // Replace with the correct Redux state path
-  const userType = useSelector((state) => state.user.type); // Replace with the correct Redux state path
+  const userName = useSelector((state) => state.user.name);
+  const userType = useSelector((state) => state.user.type);
 
   // Chakra Color Mode
   const navbarIcon = useColorModeValue("gray.400", "white");
@@ -56,7 +60,7 @@ export default function HeaderLinks(props) {
 
   // Redirect to Change Password Page
   const handleChangePasswordRedirect = () => {
-    navigate("/admin/change-password"); // Redirect to the Change Password page
+    navigate("/admin/change-password");
   };
 
   return (
@@ -125,13 +129,33 @@ export default function HeaderLinks(props) {
         </MenuList>
       </Menu>
 
+      {/* Dark Mode Toggle Button */}
+      <Button
+        variant="no-hover"
+        bg="transparent"
+        p="0px"
+        minW="unset"
+        minH="unset"
+        h="18px"
+        w="max-content"
+        onClick={toggleColorMode}
+      >
+        <Icon
+          me="10px"
+          h="18px"
+          w="18px"
+          color={navbarIcon}
+          as={colorMode === 'light' ? IoMdMoon : IoMdSunny}
+        />
+      </Button>
+
       {/* User Menu */}
       <Menu>
         <MenuButton p="0px">
           <Avatar
             _hover={{ cursor: "pointer" }}
             color="white"
-            name={userName || "User"} // Display username from Redux
+            name={userName || "User"}
             bg="#11047A"
             size="sm"
             w="40px"
@@ -158,18 +182,17 @@ export default function HeaderLinks(props) {
               fontWeight="700"
               color={textColor}
             >
-              👋&nbsp; Hey, {userName || "User"} {/* Display username */}
+              👋&nbsp; Hey, {userName || "User"}
             </Text>
           </Flex>
           <Flex flexDirection="column" p="10px">
-            {/* Conditionally render Change Password */}
             {userType !== "admin" && (
               <MenuItem
                 _hover={{ bg: "none" }}
                 _focus={{ bg: "none" }}
                 borderRadius="8px"
                 px="14px"
-                onClick={handleChangePasswordRedirect} // Redirect to Change Password page
+                onClick={handleChangePasswordRedirect}
               >
                 <Text fontSize="sm">Change Password</Text>
               </MenuItem>
