@@ -20,7 +20,7 @@ import ChangePassword from 'views/auth/signIn/ChangePassword';
 import MiddleAdmin from 'views/admin/addUser/components/MiddleAdmin';
 import MiddleAdminImei from 'views/admin/addUser/components/MiddleAdminImei';
 import MiddleAdminDashboard from 'views/admin/addUser/components/MiddleAdminDashboard'; // Import the new component
-
+import ChangeUserImei from 'views/admin/addUser/components/ChangeUserImei';
 // Auth Imports
 import SignInCentered from 'views/auth/signIn';
 
@@ -42,11 +42,19 @@ const routes = [
     display: true, // Show in sidebar
   },
   {
-    name: 'Middle Admin',
+    name: 'Add Client',
     layout: '/admin',
-    path: '/middle-admin',
+    path: '/add-client',
     icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
     component: <MiddleAdmin />,
+    display: true, // Show in sidebar
+  },
+  {
+    name: 'Change User password',
+    layout: '/admin',
+    path: '/change-user-imei',
+    icon: <Icon as={MdPerson} width="20px" height="20px" color="inherit" />,
+    component: <ChangeUserImei />,
     display: true, // Show in sidebar
   },
   {

@@ -30,6 +30,22 @@ export const createUsersFromExcel = async (file) => {
   return response.blob(); // Return the response as a Blob for file download
 };
 
+export const resetpasswordfromexcel = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file); // Attach the Excel file
+
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/reset-password-from-excel`, {
+    method: 'POST',
+    body: formData, // Send the file as FormData
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to reset password from Excel');
+  }
+
+  return response.blob(); // Return the response as a Blob for file download
+}
+
 export const createMiddleAdminsFromExcel = async (file) => {
   const formData = new FormData();
   formData.append('file', file); // Attach the Excel file

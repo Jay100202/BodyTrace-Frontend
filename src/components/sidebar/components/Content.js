@@ -53,7 +53,7 @@ export function SidebarLinks(props) {
 
     // Admin: Show "Add User" and "Middle Admin"
     if (userType === "admin") {
-      return route.name === "Add User" || route.name === "Middle Admin";
+      return route.name === "Add User" || route.name === "Add Client" || route.name === "Change User password";
     }
 
     // Middle Admin: Show "Middle Admin IMEI" and "Middle Admin Dashboard"
