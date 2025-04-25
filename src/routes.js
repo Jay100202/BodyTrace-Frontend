@@ -58,17 +58,17 @@ const routes = [
     display: true, // Show in sidebar
   },
   {
-    name: 'Middle Admin IMEI',
+    name: 'Client IMEI',
     layout: '/admin',
-    path: '/middle-admin-imei',
+    path: '/client-imei',
     icon: <Icon as={MdOutlineShoppingCart} width="20px" height="20px" color="inherit" />,
     component: <MiddleAdminImei />,
     display: true, // Show in sidebar
   },
   {
-    name: 'Middle Admin Dashboard',
+    name: 'Client Dashboard',
     layout: '/admin',
-    path: '/middle-admin-dashboard',
+    path: '/Client-dashboard',
     icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
     component: <MiddleAdminDashboard />,
     display: true, // Hide from sidebar, but keep route accessible

@@ -58,7 +58,7 @@ export function SidebarLinks(props) {
 
     // Middle Admin: Show "Middle Admin IMEI" and "Middle Admin Dashboard"
     if (userType === "middleAdmin") {
-      return route.name === "Middle Admin IMEI" || route.name === "Middle Admin Dashboard";
+      return route.name === "Client IMEI" || route.name === "Client Dashboard Dashboard";
     }
 
     // User: Show only "Main Dashboard" and "List User IMEI"

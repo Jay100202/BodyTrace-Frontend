@@ -96,7 +96,7 @@ const MiddleAdmin = () => {
           mb={6}
           color={textColor}
         >
-          Bulk Middle Admin Management
+          Bulk Client Management
         </Text>
 
         <Flex
@@ -129,7 +129,7 @@ const MiddleAdmin = () => {
             </Flex>
           ) : (
             <Flex direction="column" align="center" justify="center">
-              <Text mb={4} color={textColor}>Upload an Excel file containing middle admin information</Text>
+              <Text mb={4} color={textColor}>Upload an Excel file containing Client information</Text>
               <input
                 type="file"
                 ref={fileInputRef}

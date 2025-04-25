@@ -176,7 +176,7 @@ const MiddleAdminDashboard = () => {
     return (
       <Box pt="80px">
         <Text color="red.500" fontSize="lg" textAlign="center">
-          IMEI is missing. Please go back and select a device from Middle Admin IMEI.
+          IMEI is missing. Please go back and select a device from Client IMEI.
         </Text>
       </Box>
     );
