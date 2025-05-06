@@ -63,7 +63,10 @@ const MiddleAdminDashboard = () => {
         setLoading(true);
         const data = await getDeviceData(imei);
         const filteredData = data.filter((item) => item.values);
-        filteredData.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+        
+        // Sort data in ascending order (oldest first) for the graph
+        filteredData.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+        
         setDeviceData(filteredData);
       } catch (error) {
         console.error("Error fetching device data:", error);
@@ -192,7 +195,7 @@ const MiddleAdminDashboard = () => {
     );
   }
 
-  // Chart data preparation
+  // Chart data preparation - data is already sorted in ascending order
   const datasets = [];
   const labels = deviceData.map((item) => new Date(item.dateTime).toLocaleDateString());
 
@@ -321,6 +324,7 @@ const MiddleAdminDashboard = () => {
         </Box>
       </Card>
 
+      {/* Rest of the component remains unchanged */}
       {/* Filter and Table Section */}
       <Card
         mt="40px"

@@ -30,8 +30,10 @@ export default function UserReports() {
         console.log("Fetched device data:", data); // Debugging log
         // Filter out entries without `values`
         const filteredData = data.filter((item) => item.values);
-        // Sort the data by date in descending order (most recent first)
-        filteredData.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+
+        // Sort the data by date in ascending order (oldest first) for the chart
+        filteredData.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
         setDeviceData(filteredData);
       } catch (error) {
         console.error("Error fetching device data:", error);

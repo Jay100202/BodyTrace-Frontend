@@ -71,7 +71,7 @@ const MiddleAdminImei = () => {
   };
 
   const handleImeiClick = (imei) => {
-    navigate("/admin/middle-admin-dashboard", { state: { imei } });
+    navigate("/admin/Client-dashboard", { state: { imei } });
   };
 
   useEffect(() => {
