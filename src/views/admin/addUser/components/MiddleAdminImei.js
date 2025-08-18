@@ -13,6 +13,8 @@ import {
   Spinner,
   IconButton,
   Circle,
+  Input,
+  Button,
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
@@ -27,6 +29,7 @@ const MiddleAdminImei = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState(""); // Added search state
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -37,11 +40,21 @@ const MiddleAdminImei = () => {
   const textColor = useColorModeValue("gray.800", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
   const tableHeaderColor = useColorModeValue("gray.500", "gray.300");
+  const labelColor = useColorModeValue("gray.600", "gray.300"); // Added for search label
 
   const fetchUsersByMiddleAdmin = async () => {
     setLoading(true);
     try {
-      const response = await getUsersByMiddleAdmin(middleAdminId, currentPage, 10);
+      // Updated to pass search parameter correctly
+      const response = await getUsersByMiddleAdmin(
+        middleAdminId, 
+        currentPage, 
+        10, 
+        'createdAt', // sortBy
+        'desc',      // order
+        searchQuery  // search
+      );
+      
       if (response && Array.isArray(response.data)) {
         setDevices(response.data);
         setTotalPages(response.totalPages || 1);
@@ -74,6 +87,22 @@ const MiddleAdminImei = () => {
     navigate("/admin/Client-dashboard", { state: { imei } });
   };
 
+  // Added search handlers
+  const handleSearch = () => {
+    setCurrentPage(1); // Reset to first page when searching
+    fetchUsersByMiddleAdmin();
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   useEffect(() => {
     if (middleAdminId) {
       fetchUsersByMiddleAdmin();
@@ -91,6 +120,41 @@ const MiddleAdminImei = () => {
       flexDirection="column"
       justifyContent="center"
     >
+      {/* Added Search Section */}
+      <Card
+        mb="20px"
+        p={{ base: 4, md: 6 }}
+        bg={bgColor}
+        borderRadius="xl"
+        boxShadow="sm"
+        w="100%"
+      >
+        <Flex direction="column" gap="20px">
+          <Box w="100%">
+            <Text fontSize="sm" mb="2" color={labelColor}>
+              Search Users
+            </Text>
+            <Input
+              type="text"
+              placeholder="Search by IMEI, email, or user data..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyPress={handleSearchKeyPress}
+              w="100%"
+              bg={bgColor}
+              color={textColor}
+              borderColor={borderColor}
+            />
+          </Box>
+          <Flex justify="flex-start">
+            <Button colorScheme="blue" onClick={handleSearch}>
+              Search
+            </Button>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {/* Original Card with Table */}
       <Card
         p={{ base: 4, md: 6 }}
         bg={bgColor}
@@ -174,6 +238,8 @@ const MiddleAdminImei = () => {
                   isDisabled={currentPage === 1}
                   aria-label="Previous page"
                   mr={2}
+                  borderColor={borderColor}
+                  color={textColor}
                 />
                 <Circle
                   size="35px"
@@ -194,6 +260,8 @@ const MiddleAdminImei = () => {
                   isDisabled={currentPage === totalPages}
                   aria-label="Next page"
                   ml={2}
+                  borderColor={borderColor}
+                  color={textColor}
                 />
               </Flex>
             </Flex>

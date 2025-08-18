@@ -63,8 +63,10 @@ export const createMiddleAdminsFromExcel = async (file) => {
 };
 
 // Fetch users assigned to a middle admin
-export const getUsersByMiddleAdmin = async (middleAdminId, page = 1, limit = 10, sortBy = 'createdAt', order = 'desc') => {
-  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/middle-admin/${middleAdminId}/users?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`, {
+export const getUsersByMiddleAdmin = async (middleAdminId, page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', search = '') => {
+  const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+  
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/middle-admin/${middleAdminId}/users?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}${searchParam}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -130,13 +132,20 @@ export const fetchDeviceData = async (imei, limit = 50, from = 1) => {
 };
 
 // Fetch filtered device data based on multiple IMEI numbers, start date, and end date
-export const fetchFilteredDeviceData = async (imei, startDate, endDate, page = 1, limit = 10) => {
+export const fetchFilteredDeviceData = async (imei, startDate, endDate, page = 1, limit = 10, search = '') => {
   const response = await fetch(`${process.env.REACT_APP_API_URL}/api/user/device/filtered-data`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ imei, startDate, endDate, page, limit }), // Pass IMEI as a single value
+    body: JSON.stringify({ 
+      imei, 
+      startDate, 
+      endDate, 
+      page, 
+      limit, 
+      search // Added search parameter
+    }),
   });
 
   if (!response.ok) {

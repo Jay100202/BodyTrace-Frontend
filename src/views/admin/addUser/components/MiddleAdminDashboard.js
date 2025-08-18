@@ -43,6 +43,7 @@ const MiddleAdminDashboard = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // Added search state
   const [weightUnit, setWeightUnit] = useState("lbs");
 
   // UI colors - Fixed for dark mode consistency
@@ -93,7 +94,15 @@ const MiddleAdminDashboard = () => {
     
     setTableLoading(true);
     try {
-      const response = await fetchFilteredDeviceData(imei, startDate, endDate, currentPage);
+      // Updated to include search parameter
+      const response = await fetchFilteredDeviceData(
+        imei, 
+        startDate, 
+        endDate, 
+        currentPage, 
+        10, // limit
+        searchQuery // search parameter
+      );
 
       if (response && Array.isArray(response.data)) {
         setTableData(response.data);
@@ -126,6 +135,17 @@ const MiddleAdminDashboard = () => {
   const handleSearch = () => {
     setCurrentPage(1);
     fetchTableData();
+  };
+
+  // Added search handlers
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleDownloadCSV = async () => {
@@ -324,7 +344,6 @@ const MiddleAdminDashboard = () => {
         </Box>
       </Card>
 
-      {/* Rest of the component remains unchanged */}
       {/* Filter and Table Section */}
       <Card
         mt="40px"
@@ -335,6 +354,25 @@ const MiddleAdminDashboard = () => {
         bg={bgColor}
       >
         <Flex direction="column" gap="20px">
+          {/* Search Input Row */}
+          <Box w="100%">
+            <Text fontSize="sm" mb="2" color={labelColor}>
+              Search
+            </Text>
+            <Input
+              type="text"
+              placeholder="Search by IMEI, weight, or any value..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyPress={handleSearchKeyPress}
+              w="100%"
+              bg={bgColor}
+              color={textColor}
+              borderColor={borderColor}
+            />
+          </Box>
+
+          {/* Date Filter Row */}
           <Flex
             direction={{ base: "column", md: "row" }}
             gap="20px"
@@ -373,6 +411,7 @@ const MiddleAdminDashboard = () => {
             </Box>
           </Flex>
 
+          {/* Action Buttons Row */}
           <Flex
             direction={{ base: "column", md: "row" }}
             gap="10px"

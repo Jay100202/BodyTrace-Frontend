@@ -216,6 +216,7 @@ const ListUserImei = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // Added search state
   const [weightUnit, setWeightUnit] = useState("lbs");
   const toast = useToast();
 
@@ -232,7 +233,15 @@ const ListUserImei = () => {
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
-      const response = await fetchFilteredDeviceData(imei, startDate, endDate, currentPage);
+      // Include search query in the API call
+      const response = await fetchFilteredDeviceData(
+        imei, 
+        startDate, 
+        endDate, 
+        currentPage, 
+        10, // limit
+        searchQuery // search parameter
+      );
 
       if (response && Array.isArray(response.data)) {
         setDevices(response.data);
@@ -286,8 +295,20 @@ const ListUserImei = () => {
   };
 
   const handleSearch = () => {
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when searching
     fetchFilteredData();
+  };
+
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Handle Enter key press in search input
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   useEffect(() => {
@@ -310,6 +331,25 @@ const ListUserImei = () => {
         bg={bgColor}
       >
         <Flex direction="column" gap="20px">
+          {/* Search Input Row */}
+          <Box w="100%">
+            <Text fontSize="sm" mb="2" color={labelColor}>
+              Search
+            </Text>
+            <Input
+              type="text"
+              placeholder="Search by IMEI, weight, or any value..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyPress={handleSearchKeyPress}
+              w="100%"
+              bg={bgColor}
+              color={textColor}
+              borderColor={borderColor}
+            />
+          </Box>
+
+          {/* Date Filter Row */}
           <Flex
             direction={{ base: "column", md: "row" }}
             gap="20px"
@@ -348,6 +388,7 @@ const ListUserImei = () => {
             </Box>
           </Flex>
 
+          {/* Action Buttons Row */}
           <Flex
             direction={{ base: "column", md: "row" }}
             gap="10px"
