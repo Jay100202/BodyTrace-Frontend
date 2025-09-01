@@ -36,6 +36,8 @@ const UserList = ({
   totalCount,
   handlePageChange,
   weightUnit,
+  pageSize,
+  handlePageSizeChange,
 }) => {
   const convertWeight = (weight) => {
     if (weightUnit === "lbs") {
@@ -148,6 +150,7 @@ const UserList = ({
               </Tbody>
             </Table>
 
+            {/* Enhanced Pagination with Page Size Selector */}
             <Flex
               justify="space-between"
               align="center"
@@ -157,9 +160,38 @@ const UserList = ({
               borderColor={borderColor}
               flexDirection={{ base: "column", md: "row" }}
             >
-              <Text fontSize="sm" color={tableHeaderColor} mb={{ base: 4, md: 0 }}>
-                Showing page {currentPage} of {totalPages} ({totalCount} total entries)
-              </Text>
+              <Flex 
+                direction={{ base: "column", md: "row" }}
+                align={{ base: "flex-start", md: "center" }}
+                gap={{ base: 4, md: 8 }}
+                mb={{ base: 4, md: 0 }}
+              >
+                <Text fontSize="sm" color={tableHeaderColor}>
+                  Showing page {currentPage} of {totalPages} ({totalCount} total entries)
+                </Text>
+                
+                <Flex align="center">
+                  <Text fontSize="sm" color={tableHeaderColor} mr={2}>
+                    Show:
+                  </Text>
+                  <Select
+                    value={pageSize}
+                    onChange={handlePageSizeChange}
+                    size="sm"
+                    width="90px"
+                    bg={bgColor}
+                    color={textColor}
+                    borderColor={borderColor}
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={40}>40</option>
+                    <option value={60}>60</option>
+                    <option value={80}>80</option>
+                    <option value={100}>100</option>
+                  </Select>
+                </Flex>
+              </Flex>
 
               <Flex align="center">
                 <IconButton
@@ -216,8 +248,9 @@ const ListUserImei = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // Added search state
+  const [searchQuery, setSearchQuery] = useState("");
   const [weightUnit, setWeightUnit] = useState("lbs");
+  const [pageSize, setPageSize] = useState(10); // Added page size state
   const toast = useToast();
 
   const imei = useSelector((state) => state.user.imei);
@@ -233,14 +266,14 @@ const ListUserImei = () => {
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
-      // Include search query in the API call
+      // Include search query and page size in the API call
       const response = await fetchFilteredDeviceData(
         imei, 
         startDate, 
         endDate, 
         currentPage, 
-        10, // limit
-        searchQuery // search parameter
+        pageSize, // Using the dynamic pageSize instead of hardcoded 10
+        searchQuery
       );
 
       if (response && Array.isArray(response.data)) {
@@ -311,9 +344,16 @@ const ListUserImei = () => {
     }
   };
 
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    const newPageSize = parseInt(e.target.value);
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
   useEffect(() => {
     fetchFilteredData();
-  }, [imei, currentPage]);
+  }, [imei, currentPage, pageSize]); // Added pageSize dependency
 
   const handlePageChange = (pageNumber, unit = weightUnit) => {
     setCurrentPage(pageNumber);
@@ -418,6 +458,8 @@ const ListUserImei = () => {
         totalCount={totalCount}
         handlePageChange={handlePageChange}
         weightUnit={weightUnit}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
       />
     </Box>
   );

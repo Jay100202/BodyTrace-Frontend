@@ -15,6 +15,7 @@ import {
   Circle,
   Input,
   Button,
+  Select,
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
@@ -29,7 +30,8 @@ const MiddleAdminImei = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState(""); // Added search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pageSize, setPageSize] = useState(10); // Added page size state
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -40,19 +42,18 @@ const MiddleAdminImei = () => {
   const textColor = useColorModeValue("gray.800", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
   const tableHeaderColor = useColorModeValue("gray.500", "gray.300");
-  const labelColor = useColorModeValue("gray.600", "gray.300"); // Added for search label
+  const labelColor = useColorModeValue("gray.600", "gray.300");
 
   const fetchUsersByMiddleAdmin = async () => {
     setLoading(true);
     try {
-      // Updated to pass search parameter correctly
       const response = await getUsersByMiddleAdmin(
         middleAdminId, 
         currentPage, 
-        10, 
-        'createdAt', // sortBy
-        'desc',      // order
-        searchQuery  // search
+        pageSize, // Updated to use pageSize instead of hardcoded 10
+        'createdAt',
+        'desc',
+        searchQuery
       );
       
       if (response && Array.isArray(response.data)) {
@@ -103,11 +104,18 @@ const MiddleAdminImei = () => {
     }
   };
 
+  // Handle page size change
+  const handlePageSizeChange = (e) => {
+    const newPageSize = parseInt(e.target.value);
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
   useEffect(() => {
     if (middleAdminId) {
       fetchUsersByMiddleAdmin();
     }
-  }, [middleAdminId, currentPage]);
+  }, [middleAdminId, currentPage, pageSize]); // Added pageSize dependency
 
   return (
     <Box
@@ -120,7 +128,7 @@ const MiddleAdminImei = () => {
       flexDirection="column"
       justifyContent="center"
     >
-      {/* Added Search Section */}
+      {/* Search Section */}
       <Card
         mb="20px"
         p={{ base: 4, md: 6 }}
@@ -154,7 +162,7 @@ const MiddleAdminImei = () => {
         </Flex>
       </Card>
 
-      {/* Original Card with Table */}
+      {/* Table Card */}
       <Card
         p={{ base: 4, md: 6 }}
         bg={bgColor}
@@ -216,7 +224,7 @@ const MiddleAdminImei = () => {
               </Tbody>
             </Table>
 
-            {/* Pagination */}
+            {/* Enhanced Pagination with Page Size Selector */}
             <Flex
               justify="space-between"
               align="center"
@@ -226,9 +234,39 @@ const MiddleAdminImei = () => {
               borderColor={borderColor}
               flexDirection={{ base: "column", md: "row" }}
             >
-              <Text fontSize="sm" color={tableHeaderColor} mb={{ base: 4, md: 0 }}>
-                Showing page {currentPage} of {totalPages} ({totalCount} total entries)
-              </Text>
+              <Flex 
+                direction={{ base: "column", md: "row" }}
+                align={{ base: "flex-start", md: "center" }}
+                gap={{ base: 4, md: 8 }}
+                mb={{ base: 4, md: 0 }}
+              >
+                <Text fontSize="sm" color={tableHeaderColor}>
+                  Showing page {currentPage} of {totalPages} ({totalCount} total entries)
+                </Text>
+                
+                <Flex align="center">
+                  <Text fontSize="sm" color={tableHeaderColor} mr={2}>
+                    Show:
+                  </Text>
+                  <Select
+                    value={pageSize}
+                    onChange={handlePageSizeChange}
+                    size="sm"
+                    width="90px"
+                    bg={bgColor}
+                    color={textColor}
+                    borderColor={borderColor}
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={40}>40</option>
+                    <option value={60}>60</option>
+                    <option value={80}>80</option>
+                    <option value={100}>100</option>
+                  </Select>
+                </Flex>
+              </Flex>
+
               <Flex align="center">
                 <IconButton
                   icon={<ChevronLeftIcon />}
